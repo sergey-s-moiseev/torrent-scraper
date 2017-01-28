@@ -1,5 +1,5 @@
 {
-  "name": "xurumelous/torrent-scraper",
+  "name": "sergey-s-moiseev/torrent-scraper",
   "description": "Provide an abstraction to seach for torrent files on many websites.",
   "keywords": [
     "torrent",
@@ -7,12 +7,18 @@
     "kickass"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/xurumelous/torrent-scraper",
+  "homepage": "https://github.com/sergey-s-moiseev/torrent-scraper",
   "authors": [
     {
       "name": "Fernando Carletti",
       "email": "contato@fernandocarletti.net",
       "homepage": "http://fernandocarletti.net",
+      "role": "Developer"
+    },
+    {
+      "name": "Sergey S. Moiseev",
+      "email": "sergey.s.moiseev@gmail.com",
+      "homepage": "http://www.moses-team.ru",
       "role": "Developer"
     }
   ],
