@@ -21,6 +21,7 @@ foreach ($results as $result) {
 ```
 
 ## Available adapters
+
 * [ezTv](https://eztv.ag/)
 * [kickassTorrents](http://kickass.to)
 * [thePirateBay](http://thepiratebay.se)
