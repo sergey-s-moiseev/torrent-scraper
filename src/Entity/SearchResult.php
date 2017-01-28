@@ -1,6 +1,6 @@
 <?php
 
-namespace Xurumelous\TorrentScraper\Entity;
+namespace SergeySMoiseev\TorrentScraper\Entity;
 
 class SearchResult
 {

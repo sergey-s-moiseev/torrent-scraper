@@ -1,11 +1,11 @@
 <?php
 
-namespace Xurumelous\TorrentScraper\Adapter;
+namespace SergeySMoiseev\TorrentScraper\Adapter;
 
 use GuzzleHttp\Exception\ClientException;
-use Xurumelous\TorrentScraper\AdapterInterface;
-use Xurumelous\TorrentScraper\HttpClientAware;
-use Xurumelous\TorrentScraper\Entity\SearchResult;
+use SergeySMoiseev\TorrentScraper\AdapterInterface;
+use SergeySMoiseev\TorrentScraper\HttpClientAware;
+use SergeySMoiseev\TorrentScraper\Entity\SearchResult;
 use Symfony\Component\DomCrawler\Crawler;
 
 class ThePirateBayAdapter implements AdapterInterface

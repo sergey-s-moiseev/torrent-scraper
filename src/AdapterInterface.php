@@ -1,6 +1,6 @@
 <?php
 
-namespace Xurumelous\TorrentScraper;
+namespace SergeySMoiseev\TorrentScraper;
 
 interface AdapterInterface
 {

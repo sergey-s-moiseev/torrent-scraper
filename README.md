@@ -1,8 +1,6 @@
 Torrent Scraper
 ===============
 
-[![Build Status](https://travis-ci.org/xurumelous/torrent-scraper.svg?branch=master)](https://travis-ci.org/xurumelous/torrent-scraper)
-
 ## About
 This library provides an abstraction to search for torrent files accross some torrent websites.
 
@@ -10,7 +8,7 @@ This library provides an abstraction to search for torrent files accross some to
 ```php
 <?php
 
-$scraperService = new \Xurumelous\TorrentScraper\TorrentScrapperService(['ezTv', 'kickassTorrents']);
+$scraperService = new \SergeySMoiseev\TorrentScraper\TorrentScrapperService(['ezTv', 'kickassTorrents']);
 $results = $scraperService->search('elementaryos');
 
 foreach ($results as $result) {

@@ -1,11 +1,11 @@
 <?php
 
-namespace Xurumelous\TorrentScraper;
+namespace SergeySMoiseev\TorrentScraper;
 
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Request;
-use Xurumelous\TorrentScraper\Adapter\EzTvAdapter;
-use Xurumelous\TorrentScraper\Entity\SearchResult;
+use SergeySMoiseev\TorrentScraper\Adapter\EzTvAdapter;
+use SergeySMoiseev\TorrentScraper\Entity\SearchResult;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
@@ -18,7 +18,7 @@ class EzTvBayAdapterTest extends \PHPUnit_Framework_TestCase
     {
         $adapter = new EzTvAdapter();
 
-        $this->assertInstanceOf('\Xurumelous\TorrentScraper\AdapterInterface', $adapter);
+        $this->assertInstanceOf('\SergeySMoiseev\TorrentScraper\AdapterInterface', $adapter);
     }
 
     public function testIsGettingAndSettingHttpClient()

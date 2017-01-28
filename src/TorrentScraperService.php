@@ -1,8 +1,8 @@
 <?php
 
-namespace Xurumelous\TorrentScraper;
+namespace SergeySMoiseev\TorrentScraper;
 
-use Xurumelous\TorrentScraper\Entity\SearchResult;
+use SergeySMoiseev\TorrentScraper\Entity\SearchResult;
 
 class TorrentScraperService
 {
