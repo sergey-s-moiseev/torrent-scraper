@@ -22,6 +22,11 @@ class SearchResult
     /**
      * @var string
      */
+    protected $source;
+
+    /**
+     * @var string
+     */
     protected $torrentUrl;
 
     /**
@@ -108,4 +113,22 @@ class SearchResult
     {
         return $this->magnetUrl;
     }
+
+    /**
+     * @return string
+     */
+    public function getSource()
+    {
+        return $this->source;
+    }
+
+    /**
+     * @param string $source
+     */
+    public function setSource($source)
+    {
+        $this->source = $source;
+    }
+
+
 }

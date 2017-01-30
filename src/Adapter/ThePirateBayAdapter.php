@@ -6,6 +6,7 @@ use GuzzleHttp\Exception\ClientException;
 use SergeySMoiseev\TorrentScraper\AdapterInterface;
 use SergeySMoiseev\TorrentScraper\HttpClientAware;
 use SergeySMoiseev\TorrentScraper\Entity\SearchResult;
+use SergeySMoiseev\TorrentScraper\TorrentScraperService;
 use Symfony\Component\DomCrawler\Crawler;
 
 class ThePirateBayAdapter implements AdapterInterface
@@ -49,6 +50,7 @@ class ThePirateBayAdapter implements AdapterInterface
             $result->setName(trim($itemCrawler->filter('.detName')->text()));
             $result->setSeeders((int) $itemCrawler->filter('td')->eq(2)->text());
             $result->setLeechers((int) $itemCrawler->filter('td')->eq(3)->text());
+            $result->setSource(TorrentScraperService::THEPIRATEBAY);
             $result->setMagnetUrl($itemCrawler->filterXpath('//tr/td/a')->attr('href'));
 
             $results[] = $result;

@@ -6,6 +6,7 @@ use GuzzleHttp\Exception\ClientException;
 use SergeySMoiseev\TorrentScraper\AdapterInterface;
 use SergeySMoiseev\TorrentScraper\HttpClientAware;
 use SergeySMoiseev\TorrentScraper\Entity\SearchResult;
+use SergeySMoiseev\TorrentScraper\TorrentScraperService;
 use Symfony\Component\DomCrawler\Crawler;
 
 class EzTvAdapter implements AdapterInterface
@@ -49,6 +50,7 @@ class EzTvAdapter implements AdapterInterface
             $result->setName(trim($itemCrawler->filter('td')->eq(1)->text()));
             $result->setSeeders($this->options['seeders']);
             $result->setLeechers($this->options['leechers']);
+            $result->setSource(TorrentScraperService::EZTV);
 
             $node = $itemCrawler->filter('a.download_1');
             if ($node->count() > 0) {

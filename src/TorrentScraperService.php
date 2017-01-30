@@ -11,6 +11,10 @@ class TorrentScraperService
      */
     protected $adapters;
 
+    const EZTV = 'ezTv';
+    const KICKASS = 'kickassTorrents';
+    const THEPIRATEBAY = 'thePirateBay';
+
     /**
      * @param array $adapters
      * @param array $options

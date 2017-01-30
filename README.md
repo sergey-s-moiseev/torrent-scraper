@@ -8,11 +8,12 @@ This library provides an abstraction to search for torrent files accross some to
 ```php
 <?php
 
-$scraperService = new \SergeySMoiseev\TorrentScraper\TorrentScraperService(['ezTv', 'kickassTorrents']);
+$scraperService = new \SergeySMoiseev\TorrentScraper\TorrentScraperService([TorrentScraperService::EZTV, TorrentScraperService::KICKASS]);
 $results = $scraperService->search('elementaryos');
 
 foreach ($results as $result) {
 	$result->getName();
+    $result->getSource();
     $result->getSeeders();
     $result->getLeechers();
     $result->getTorrentUrl();

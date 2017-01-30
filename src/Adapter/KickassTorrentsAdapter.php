@@ -5,6 +5,7 @@ namespace SergeySMoiseev\TorrentScraper\Adapter;
 use SergeySMoiseev\TorrentScraper\AdapterInterface;
 use SergeySMoiseev\TorrentScraper\HttpClientAware;
 use SergeySMoiseev\TorrentScraper\Entity\SearchResult;
+use SergeySMoiseev\TorrentScraper\TorrentScraperService;
 use Symfony\Component\DomCrawler\Crawler;
 
 class KickassTorrentsAdapter implements AdapterInterface
@@ -57,6 +58,7 @@ class KickassTorrentsAdapter implements AdapterInterface
 
             $result = new SearchResult();
             $result->setName($name);
+            $result->setSource(TorrentScraperService::KICKASS);
             $result->setSeeders((int) $itemCrawler->filter('td:nth-child(5)')->text());
             $result->setLeechers((int) $itemCrawler->filter('td:nth-child(6)')->text());
             $result->setMagnetUrl($data->magnet);
