@@ -47,7 +47,9 @@ class ThePirateBayAdapter implements AdapterInterface
 
             $result = new SearchResult();
             $itemCrawler = new Crawler($item);
+//            $desc = trim($itemCrawler->filter('.detDesc')->text());
             $result->setName(trim($itemCrawler->filter('.detName')->text()));
+            $result->setCategory(trim($itemCrawler->filter('.vertTh')->text()));
             $result->setSeeders((int) $itemCrawler->filter('td')->eq(2)->text());
             $result->setLeechers((int) $itemCrawler->filter('td')->eq(3)->text());
             $result->setSource(TorrentScraperService::THEPIRATEBAY);

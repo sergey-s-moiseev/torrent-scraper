@@ -35,6 +35,24 @@ class SearchResult
     protected $magnetUrl;
 
     /**
+     * @var string
+     */
+    protected $category;
+
+    /**
+     * @var string
+     */
+    protected $timestamp;
+
+    /**
+     * @var string
+     */
+    protected $size;
+
+
+
+
+    /**
      * @param string $name
      */
     public function setName($name)
@@ -83,6 +101,22 @@ class SearchResult
     }
 
     /**
+     * @return string
+     */
+    public function getSource()
+    {
+        return $this->source;
+    }
+
+    /**
+     * @param string $source
+     */
+    public function setSource($source)
+    {
+        $this->source = $source;
+    }
+
+    /**
      * @param string $torrentUrl
      */
     public function setTorrentUrl($torrentUrl)
@@ -109,25 +143,57 @@ class SearchResult
     /**
      * @return string
      */
-    public function getMagnetUrl()
+    public function getCategory()
     {
         return $this->magnetUrl;
     }
 
     /**
-     * @return string
+     * @param string $category
      */
-    public function getSource()
+    public function setCategory($category)
     {
-        return $this->source;
+        $this->category = $category;
     }
 
     /**
-     * @param string $source
+     * @return string
      */
-    public function setSource($source)
+    public function getMagnetUrl()
     {
-        $this->source = $source;
+        return $this->category;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTimestamp()
+    {
+        return $this->timestamp;
+    }
+
+    /**
+     * @param string $timestamp
+     */
+    public function setTimestamp($timestamp)
+    {
+        $this->timestamp = $timestamp;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSize()
+    {
+        return $this->size;
+    }
+
+    /**
+     * @param string $size
+     */
+    public function setSize($size)
+    {
+        $this->size = $size;
     }
 
 
