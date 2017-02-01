@@ -53,6 +53,9 @@ class EzTvAdapter implements AdapterInterface
             } catch(\Exception $e){
                 $seeds = 0;
             }
+            $vowels = array(",", ".", " ");
+            $seeds = str_replace($vowels, "", $seeds);
+
             $result->setName(trim($itemCrawler->filter('td')->eq(1)->text()));
             $result->setSeeders($seeds);
             $result->setLeechers($this->options['leechers']);
