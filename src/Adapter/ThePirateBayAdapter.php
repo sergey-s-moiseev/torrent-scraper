@@ -8,6 +8,8 @@ use SergeySMoiseev\TorrentScraper\HttpClientAware;
 use SergeySMoiseev\TorrentScraper\Entity\SearchResult;
 use SergeySMoiseev\TorrentScraper\TorrentScraperService;
 use Symfony\Component\DomCrawler\Crawler;
+use DateTime;
+use DateInterval;
 
 class ThePirateBayAdapter implements AdapterInterface
 {
@@ -47,13 +49,52 @@ class ThePirateBayAdapter implements AdapterInterface
 
             $result = new SearchResult();
             $itemCrawler = new Crawler($item);
-//            $desc = trim($itemCrawler->filter('.detDesc')->text());
+            $desc = trim($itemCrawler->filter('.detDesc')->text());
+
+            $desc = ' Uploaded 01-29 2017, Size 1.1 GiB, ULed by HeroMaster';
+
+            preg_match("/(\d{2})-(\d{2})|Today|Y-day/", $desc, $date_str);
+            preg_match("/(\d{4})[^\.]/", $desc, $year);
+            preg_match("/MiB|GiB|TiB|KiB/", $desc, $k_size);
+            preg_match("/Size\s(\d{1,}(\.\d{1,})?)/", $desc, $size);
+            /**@var $date [0] DateTime**/
+            if ($date_str[0] == 'Today') {
+                $date = new DateTime('now');
+            }
+            elseif ($date_str[0] == 'Y-day') {
+                $date = new DateTime('now');
+                $date->sub(new DateInterval('P1D'));
+            } else {
+                $date = new DateTime();
+                $date->setDate($year[1], $date_str[1], $date_str[2]);
+            }
+
+            /**Size**/
+            $size=(float) $size[1];
+            switch ($k_size[0]){
+                case 'KiB':
+                    $size = $size * 1/1024;
+                    break;
+
+                case 'MiB':
+                    break;
+
+                case 'GiB':
+                    $size = $size * 1024;
+                    break;
+
+                case 'TiB':
+                    $size = $size * 1024*1024;
+                    break;
+            }
             $result->setName(trim($itemCrawler->filter('.detName')->text()));
             $result->setCategory(trim($itemCrawler->filter('.vertTh')->text()));
             $result->setSeeders((int) $itemCrawler->filter('td')->eq(2)->text());
             $result->setLeechers((int) $itemCrawler->filter('td')->eq(3)->text());
             $result->setSource(TorrentScraperService::THEPIRATEBAY);
             $result->setMagnetUrl($itemCrawler->filterXpath('//tr/td/a')->attr('href'));
+            $result->setTimestamp($date->getTimestamp());
+            $result->setSize($size);
 
             $results[] = $result;
         }
