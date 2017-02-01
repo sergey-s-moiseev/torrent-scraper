@@ -59,8 +59,6 @@ class EzTvAdapter implements AdapterInterface
             $result->setSource(TorrentScraperService::EZTV);
             $result->setMagnetUrl($itemCrawler->filter('td')->eq(2)->children()->attr('href'));
 
-//            var_dump($itemCrawler->filter('td')->eq(5)->children()->text());
-            var_dump($result->getName());
             $results[] = $result;
         }
 
