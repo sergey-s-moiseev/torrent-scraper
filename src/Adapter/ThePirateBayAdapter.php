@@ -50,11 +50,9 @@ class ThePirateBayAdapter implements AdapterInterface
             $result = new SearchResult();
             $itemCrawler = new Crawler($item);
             $desc = trim($itemCrawler->filter('.detDesc')->text());
-
-            $desc = ' Uploaded 01-29 2017, Size 1.1 GiB, ULed by HeroMaster';
-
+            $now = new DateTime();
             preg_match("/(\d{2})-(\d{2})|Today|Y-day/", $desc, $date_str);
-            preg_match("/(\d{4})[^\.]/", $desc, $year);
+            $year = (preg_match("/(\d{4})[^\.]/", $desc, $year)) ? $year[1] : $now->format('Y');
             preg_match("/MiB|GiB|TiB|KiB/", $desc, $k_size);
             preg_match("/Size\s(\d{1,}(\.\d{1,})?)/", $desc, $size);
             /**@var $date [0] DateTime**/
@@ -66,7 +64,7 @@ class ThePirateBayAdapter implements AdapterInterface
                 $date->sub(new DateInterval('P1D'));
             } else {
                 $date = new DateTime();
-                $date->setDate($year[1], $date_str[1], $date_str[2]);
+                $date->setDate($year, $date_str[1], $date_str[2]);
             }
 
             /**Size**/
@@ -92,10 +90,11 @@ class ThePirateBayAdapter implements AdapterInterface
             $result->setSeeders((int) $itemCrawler->filter('td')->eq(2)->text());
             $result->setLeechers((int) $itemCrawler->filter('td')->eq(3)->text());
             $result->setSource(TorrentScraperService::THEPIRATEBAY);
-            $result->setMagnetUrl($itemCrawler->filterXpath('//td/a')->attr('href'));
+            $result->setMagnetUrl($itemCrawler->filterXpath('//tr/td/a')->attr('href'));
             $result->setTimestamp($date->getTimestamp());
             $result->setSize($size);
             $results[] = $result;
+//            var_dump($result->getCategory());
         }
 
         return $results;

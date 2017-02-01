@@ -49,8 +49,13 @@ class SearchResult
      */
     protected $size;
 
-
-
+    /**
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
 
     /**
      * @param string $name
@@ -61,11 +66,11 @@ class SearchResult
     }
 
     /**
-     * @return string
+     * @return int
      */
-    public function getName()
+    public function getSeeders()
     {
-        return $this->name;
+        return $this->seeders;
     }
 
     /**
@@ -79,9 +84,9 @@ class SearchResult
     /**
      * @return int
      */
-    public function getSeeders()
+    public function getLeechers()
     {
-        return $this->seeders;
+        return $this->leechers;
     }
 
     /**
@@ -90,14 +95,6 @@ class SearchResult
     public function setLeechers($leechers)
     {
         $this->leechers = $leechers;
-    }
-
-    /**
-     * @return int
-     */
-    public function getLeechers()
-    {
-        return $this->leechers;
     }
 
     /**
@@ -117,6 +114,14 @@ class SearchResult
     }
 
     /**
+     * @return string
+     */
+    public function getTorrentUrl()
+    {
+        return $this->torrentUrl;
+    }
+
+    /**
      * @param string $torrentUrl
      */
     public function setTorrentUrl($torrentUrl)
@@ -127,9 +132,9 @@ class SearchResult
     /**
      * @return string
      */
-    public function getTorrentUrl()
+    public function getMagnetUrl()
     {
-        return $this->torrentUrl;
+        return $this->magnetUrl;
     }
 
     /**
@@ -145,7 +150,7 @@ class SearchResult
      */
     public function getCategory()
     {
-        return $this->magnetUrl;
+        return $this->category;
     }
 
     /**
@@ -154,14 +159,6 @@ class SearchResult
     public function setCategory($category)
     {
         $this->category = $category;
-    }
-
-    /**
-     * @return string
-     */
-    public function getMagnetUrl()
-    {
-        return $this->category;
     }
 
     /**
@@ -195,6 +192,10 @@ class SearchResult
     {
         $this->size = $size;
     }
+
+
+
+
 
 
 }
