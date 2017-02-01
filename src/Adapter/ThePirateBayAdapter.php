@@ -92,10 +92,9 @@ class ThePirateBayAdapter implements AdapterInterface
             $result->setSeeders((int) $itemCrawler->filter('td')->eq(2)->text());
             $result->setLeechers((int) $itemCrawler->filter('td')->eq(3)->text());
             $result->setSource(TorrentScraperService::THEPIRATEBAY);
-            $result->setMagnetUrl($itemCrawler->filterXpath('//tr/td/a')->attr('href'));
+            $result->setMagnetUrl($itemCrawler->filterXpath('//td/a')->attr('href'));
             $result->setTimestamp($date->getTimestamp());
             $result->setSize($size);
-
             $results[] = $result;
         }
 

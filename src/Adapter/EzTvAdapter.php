@@ -48,19 +48,10 @@ class EzTvAdapter implements AdapterInterface
             $result = new SearchResult();
             $itemCrawler = new Crawler($item);
             $result->setName(trim($itemCrawler->filter('td')->eq(1)->text()));
-            $result->setSeeders($this->options['seeders']);
+            $result->setSeeders(trim ($itemCrawler->filter('td')->eq(5)->children()->text()));
             $result->setLeechers($this->options['leechers']);
             $result->setSource(TorrentScraperService::EZTV);
-
-            $node = $itemCrawler->filter('a.download_1');
-            if ($node->count() > 0) {
-                $result->setTorrentUrl($node->eq(0)->attr('href'));
-            }
-
-            $node = $itemCrawler->filter('a.magnet');
-            if ($node->count() > 0) {
-                $result->setMagnetUrl($node->eq(0)->attr('href'));
-            }
+            $result->setMagnetUrl($itemCrawler->filter('td')->eq(2)->children()->attr('href'));
 
             $results[] = $result;
         }
