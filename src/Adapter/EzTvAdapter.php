@@ -47,12 +47,20 @@ class EzTvAdapter implements AdapterInterface
         foreach ($items as $item) {
             $result = new SearchResult();
             $itemCrawler = new Crawler($item);
+
+            try {
+                $seeds = trim ($itemCrawler->filter('td')->eq(5)->children()->text());
+            } catch(\Exception $e){
+                $seeds = 0;
+            }
             $result->setName(trim($itemCrawler->filter('td')->eq(1)->text()));
-            $result->setSeeders(trim ($itemCrawler->filter('td')->eq(5)->children()->text()));
+            $result->setSeeders($seeds);
             $result->setLeechers($this->options['leechers']);
             $result->setSource(TorrentScraperService::EZTV);
             $result->setMagnetUrl($itemCrawler->filter('td')->eq(2)->children()->attr('href'));
 
+//            var_dump($itemCrawler->filter('td')->eq(5)->children()->text());
+            var_dump($result->getName());
             $results[] = $result;
         }
 

@@ -94,7 +94,6 @@ class ThePirateBayAdapter implements AdapterInterface
             $result->setTimestamp($date->getTimestamp());
             $result->setSize($size);
             $results[] = $result;
-//            var_dump($result->getCategory());
         }
 
         return $results;
