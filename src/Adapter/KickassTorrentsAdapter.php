@@ -28,6 +28,7 @@ class KickassTorrentsAdapter implements AdapterInterface
     {
         try {
             $response = $this->httpClient->get('http://kickasstorrents.to/usearch/' . urlencode($query) . '/');
+            var_dump('http://kickasstorrents.to/usearch/' . urlencode($query) . '/');
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             return [];
         }

@@ -48,6 +48,7 @@ class EzTvAdapter implements AdapterInterface
             $result = new SearchResult();
             $itemCrawler = new Crawler($item);
 
+            /**Seeds**/
             try {
                 $seeds = trim ($itemCrawler->filter('td')->eq(5)->children()->text());
             } catch(\Exception $e){
@@ -56,12 +57,34 @@ class EzTvAdapter implements AdapterInterface
             $vowels = array(",", ".", " ");
             $seeds = str_replace($vowels, "", $seeds);
 
+            /**Size**/
+            $size_str = trim($itemCrawler->filter('td')->eq(3)->text());
+            $size_arr = explode (" ", $size_str);
+            $size = floatval($size_arr[0]);
+            $k_size = $size_arr[1];
+            switch ($k_size){
+                case 'KB':
+                    $size = $size * 1/1024;
+                    break;
+
+                case 'MB':
+                    break;
+
+                case 'GB':
+                    $size = $size * 1024;
+                    break;
+
+                case 'TB':
+                    $size = $size * 1024*1024;
+                    break;
+            }
+
             $result->setName(trim($itemCrawler->filter('td')->eq(1)->text()));
             $result->setSeeders($seeds);
             $result->setLeechers($this->options['leechers']);
             $result->setSource(TorrentScraperService::EZTV);
             $result->setMagnetUrl($itemCrawler->filter('td')->eq(2)->children()->attr('href'));
-
+            $result->setSize($size);
             $results[] = $result;
         }
 
