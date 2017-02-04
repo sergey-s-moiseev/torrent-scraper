@@ -43,6 +43,10 @@ class SearchResult
      * @var string
      */
     protected $timestamp;
+    /**
+     * @var string
+     */
+    protected $rating;
 
     /**
      * @var string
@@ -214,6 +218,22 @@ class SearchResult
     public function setDetailsUrl($detailsUrl)
     {
         $this->detailsUrl = $detailsUrl;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRating()
+    {
+        return $this->rating;
+    }
+
+    /**
+     * @param string $rating
+     */
+    public function setRating($rating)
+    {
+        $this->rating = $rating;
     }
 
 

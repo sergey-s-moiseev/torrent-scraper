@@ -79,9 +79,13 @@ class EzTvAdapter implements AdapterInterface
                     break;
             }
 
+            $det_url = 'https://eztv.ag'. $itemCrawler->filter('td')->eq(1)->children()->attr('href');
+            $rat_url = 'https://eztv.ag'. $itemCrawler->filter('td')->eq(0)->children()->attr('href');
+            $result->setRating($this->getRating($rat_url));
             $result->setName(trim($itemCrawler->filter('td')->eq(1)->text()));
+            $result->setDetailsUrl($det_url);
             $result->setSeeders($seeds);
-            $result->setLeechers($this->options['leechers']);
+            $result->setLeechers($this->getPeers($det_url));
             $result->setSource(TorrentScraperService::EZTV);
             $result->setMagnetUrl($itemCrawler->filter('td')->eq(2)->children()->attr('href'));
             $result->setSize($size);
@@ -100,5 +104,32 @@ class EzTvAdapter implements AdapterInterface
     public function transformSearchString($searchString)
     {
         return preg_replace('/[^a-z0-9]/', '-', strtolower($searchString));
+    }
+
+    private function getPeers($url) {
+        try {
+            $response = $this->httpClient->get($url);
+        } catch (ClientException $e) {
+            return [];
+        }
+        $crawler = new Crawler((string) $response->getBody());
+        $item = $crawler->filter('td.episode_middle_column');
+        $peers = trim($item->filter('span.stat_red')->text());
+
+        return (int)$peers;
+
+    }
+
+    private function getRating($url) {
+        try {
+            $response = $this->httpClient->get($url);
+        } catch (ClientException $e) {
+            return [];
+        }
+        $crawler = new Crawler((string) $response->getBody());
+        $item = $crawler->filter('#header_holder');
+        $item = $item->filter('td.show_info_rating_score');
+        $rating = $item->filter('span')->text();
+        return (float)$rating;
     }
 }
