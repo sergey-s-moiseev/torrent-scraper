@@ -18,6 +18,9 @@ foreach ($results as $result) {
     $result->getLeechers();
     $result->getTorrentUrl();
     $result->getMagnetUrl();
+    $result->getDetailsUrl();
+    $result->getCategory();
+    $result->getSize();
 }
 ```
 

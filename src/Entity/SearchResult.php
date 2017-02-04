@@ -50,6 +50,13 @@ class SearchResult
     protected $size;
 
     /**
+     * @var string
+     */
+    protected $detailsUrl;
+
+
+
+    /**
      * @return string
      */
     public function getName()
@@ -191,6 +198,22 @@ class SearchResult
     public function setSize($size)
     {
         $this->size = $size;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDetailsUrl()
+    {
+        return $this->detailsUrl;
+    }
+
+    /**
+     * @param string $detailsUrl
+     */
+    public function setDetailsUrl($detailsUrl)
+    {
+        $this->detailsUrl = $detailsUrl;
     }
 
 

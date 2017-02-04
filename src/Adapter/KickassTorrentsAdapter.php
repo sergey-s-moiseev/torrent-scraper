@@ -59,6 +59,7 @@ class KickassTorrentsAdapter implements AdapterInterface
 
             $result = new SearchResult();
             $result->setName($name);
+            $result->setCategory('TV shows');
             $result->setSource(TorrentScraperService::KICKASS);
             $result->setSeeders((int) $itemCrawler->filter('td:nth-child(5)')->text());
             $result->setLeechers((int) $itemCrawler->filter('td:nth-child(6)')->text());

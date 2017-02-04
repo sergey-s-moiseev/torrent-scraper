@@ -42,6 +42,7 @@ class ThePirateBayAdapter implements AdapterInterface
         
         $crawler = new Crawler((string) $response->getBody());
         $items = $crawler->filter('#searchResult tr');
+
         $results = [];
         $first = true;
 
@@ -95,7 +96,9 @@ class ThePirateBayAdapter implements AdapterInterface
             preg_match('/[a-zA-Z]+/',$category,$parent_cat);
             preg_match('/\(((.?)+)\)/',$category,$child_cat);
             $category = implode (":",[$parent_cat[0], $child_cat[1]]);
+            $link = $itemCrawler->filter('.detName')->children(1)->attr('href');
             $result->setName(trim($itemCrawler->filter('.detName')->text()));
+            $result->setDetailsUrl('https://thepiratebay.org'.$link);
             $result->setCategory($category);
             $result->setSeeders((int) $itemCrawler->filter('td')->eq(2)->text());
             $result->setLeechers((int) $itemCrawler->filter('td')->eq(3)->text());
@@ -104,8 +107,8 @@ class ThePirateBayAdapter implements AdapterInterface
             $result->setTimestamp($date->getTimestamp());
             $result->setSize($size);
             $results[] = $result;
-        }
 
+        }
         return $results;
     }
 }
