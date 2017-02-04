@@ -74,6 +74,7 @@ class SearchResult
     public function setName($name)
     {
         $this->name = $name;
+        return $this;
     }
 
     /**
@@ -90,6 +91,8 @@ class SearchResult
     public function setSeeders($seeders)
     {
         $this->seeders = $seeders;
+        return $this;
+
     }
 
     /**
@@ -106,6 +109,8 @@ class SearchResult
     public function setLeechers($leechers)
     {
         $this->leechers = $leechers;
+        return $this;
+
     }
 
     /**
@@ -122,6 +127,8 @@ class SearchResult
     public function setSource($source)
     {
         $this->source = $source;
+        return $this;
+
     }
 
     /**
@@ -138,6 +145,8 @@ class SearchResult
     public function setTorrentUrl($torrentUrl)
     {
         $this->torrentUrl = $torrentUrl;
+        return $this;
+
     }
 
     /**
@@ -154,6 +163,8 @@ class SearchResult
     public function setMagnetUrl($magnetUrl)
     {
         $this->magnetUrl = $magnetUrl;
+        return $this;
+
     }
 
     /**
@@ -170,6 +181,8 @@ class SearchResult
     public function setCategory($category)
     {
         $this->category = $category;
+        return $this;
+
     }
 
     /**
@@ -186,6 +199,8 @@ class SearchResult
     public function setTimestamp($timestamp)
     {
         $this->timestamp = $timestamp;
+        return $this;
+
     }
 
     /**
@@ -202,6 +217,8 @@ class SearchResult
     public function setSize($size)
     {
         $this->size = $size;
+        return $this;
+
     }
 
     /**
@@ -218,6 +235,8 @@ class SearchResult
     public function setDetailsUrl($detailsUrl)
     {
         $this->detailsUrl = $detailsUrl;
+        return $this;
+
     }
 
     /**
@@ -234,6 +253,8 @@ class SearchResult
     public function setRating($rating)
     {
         $this->rating = $rating;
+        return $this;
+
     }
 
 
