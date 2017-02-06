@@ -45,51 +45,64 @@ class EzTvAdapter implements AdapterInterface
         $results = [];
 
         foreach ($items as $item) {
-            $result = new SearchResult();
-            $itemCrawler = new Crawler($item);
-
-            /**Seeds**/
             try {
-                $seeds = trim ($itemCrawler->filter('td')->eq(5)->children()->text());
-            } catch(\Exception $e){
-                $seeds = 0;
-            }
-            $vowels = array(",", ".", " ");
-            $seeds = str_replace($vowels, "", $seeds);
+                $result = new SearchResult();
+                $itemCrawler = new Crawler($item);
+                $save = true;
 
-            /**Size**/
-            $size_str = trim($itemCrawler->filter('td')->eq(3)->text());
-            $size_arr = explode (" ", $size_str);
-            $size = floatval($size_arr[0]);
-            $k_size = $size_arr[1];
-            switch ($k_size){
-                case 'KB':
-                    $size = $size * 1/1024;
-                    break;
+                /**Seeds**/
+                try {
+                    $seeds = trim($itemCrawler->filter('td')->eq(5)->children()->text());
+                } catch (\Exception $e) {
+                    $seeds = 0;
+                }
+                $vowels = array(",", ".", " ");
+                $seeds = str_replace($vowels, "", $seeds);
 
-                case 'MB':
-                    break;
+                /**Size**/
+                $size_str = trim($itemCrawler->filter('td')->eq(3)->text());
+                $size_arr = explode(" ", $size_str);
+                $size = floatval($size_arr[0]);
+                $k_size = $size_arr[1];
+                switch ($k_size) {
+                    case 'KB':
+                        $size = $size * 1 / 1024;
+                        break;
 
-                case 'GB':
-                    $size = $size * 1024;
-                    break;
+                    case 'MB':
+                        break;
 
-                case 'TB':
-                    $size = $size * 1024*1024;
-                    break;
-            }
+                    case 'GB':
+                        $size = $size * 1024;
+                        break;
 
-            $det_url = 'https://eztv.ag'. $itemCrawler->filter('td')->eq(1)->children()->attr('href');
+                    case 'TB':
+                        $size = $size * 1024 * 1024;
+                        break;
+                }
+                try {
+                    $magnet_url = $itemCrawler->filter('td')->eq(2)->children()->attr('href');
+                     }
+                catch (ClientException $e) {
+                    $magnet_url = null;
+                    $save = false;
+                                }
+
+
+                $det_url = 'https://eztv.ag' . $itemCrawler->filter('td')->eq(1)->children()->attr('href');
 //            $rat_url = 'https://eztv.ag'. $itemCrawler->filter('td')->eq(0)->children()->attr('href');
 //            $result->setRating($this->getRating($rat_url));
-            $result->setName(trim($itemCrawler->filter('td')->eq(1)->text()));
-            $result->setDetailsUrl($det_url);
-            $result->setSeeders($seeds);
+                $result->setName(trim($itemCrawler->filter('td')->eq(1)->text()));
+                $result->setDetailsUrl($det_url);
+                $result->setSeeders($seeds);
 //            $result->setLeechers($this->getPeers($det_url));
-            $result->setSource(TorrentScraperService::EZTV);
-            $result->setMagnetUrl($itemCrawler->filter('td')->eq(2)->children()->attr('href'));
-            $result->setSize($size);
-            $results[] = $result;
+                $result->setSource(TorrentScraperService::EZTV);
+                $result->setMagnetUrl($magnet_url);
+                $result->setSize($size);
+                if ($save) $results[] = $result;
+            }
+            catch (ClientException $e) {
+            }
         }
 
         return $results;
