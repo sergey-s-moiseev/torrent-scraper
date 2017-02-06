@@ -80,12 +80,12 @@ class EzTvAdapter implements AdapterInterface
             }
 
             $det_url = 'https://eztv.ag'. $itemCrawler->filter('td')->eq(1)->children()->attr('href');
-            $rat_url = 'https://eztv.ag'. $itemCrawler->filter('td')->eq(0)->children()->attr('href');
-            $result->setRating($this->getRating($rat_url));
+//            $rat_url = 'https://eztv.ag'. $itemCrawler->filter('td')->eq(0)->children()->attr('href');
+//            $result->setRating($this->getRating($rat_url));
             $result->setName(trim($itemCrawler->filter('td')->eq(1)->text()));
             $result->setDetailsUrl($det_url);
             $result->setSeeders($seeds);
-            $result->setLeechers($this->getPeers($det_url));
+//            $result->setLeechers($this->getPeers($det_url));
             $result->setSource(TorrentScraperService::EZTV);
             $result->setMagnetUrl($itemCrawler->filter('td')->eq(2)->children()->attr('href'));
             $result->setSize($size);
