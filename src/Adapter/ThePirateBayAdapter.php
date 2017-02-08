@@ -36,7 +36,7 @@ class ThePirateBayAdapter implements AdapterInterface
                 // $response = $this->httpClient->get('https://thepiratebay.se/recent');
                 $response = $this->httpClient->get('https://thepiratebay.org/top/all');
             }
-        } catch (ClientException $e) {
+        } catch (\Exception $e) {
             return [];
         }
         
@@ -55,7 +55,17 @@ class ThePirateBayAdapter implements AdapterInterface
 
             $result = new SearchResult();
             $itemCrawler = new Crawler($item);
-            $desc = trim($itemCrawler->filter('.detDesc')->text());
+            try{
+                $desc = trim($itemCrawler->filter('.detDesc')->text());
+            } catch (\Exception $e) {$desc = null;}
+            try {
+                $name = ($itemCrawler->filter('.detName')->text());
+            } catch (\Exception $e) {$name = null;
+                continue;}
+            try {$magnet = $itemCrawler->filterXpath('//tr/td/a')->attr('href');
+            } catch (\Exception $e){$magnet = null;
+                continue;}
+
             $now = new DateTime();
             preg_match("/(\d{2})-(\d{2})|Today|Y-day/", $desc, $date_str);
             $year = (preg_match("/(\d{4})[^\.]/", $desc, $year)) ? $year[1] : $now->format('Y');
@@ -92,22 +102,30 @@ class ThePirateBayAdapter implements AdapterInterface
                     break;
             }
             /**Category**/
-            $category = trim($itemCrawler->filter('.vertTh')->text());
-            preg_match('/[a-zA-Z]+/',$category,$parent_cat);
-            preg_match('/\(((.?)+)\)/',$category,$child_cat);
-            $category = implode (":",[$parent_cat[0], $child_cat[1]]);
-            $link = $itemCrawler->filter('.detName')->children(1)->attr('href');
-            $result->setName(trim($itemCrawler->filter('.detName')->text()));
+            try {
+                $category = trim($itemCrawler->filter('.vertTh')->text());
+                preg_match('/[a-zA-Z]+/', $category, $parent_cat);
+                preg_match('/\(((.?)+)\)/', $category, $child_cat);
+                $category = implode(":", [$parent_cat[0], $child_cat[1]]);
+            } catch (\Exception $e){$category = null;}
+            try {
+                $link = $itemCrawler->filter('.detName')->children(1)->attr('href');
+            } catch (\Exception $e){$link = null;}
+            try {$seeds = (int) $itemCrawler->filter('td')->eq(2)->text();
+            } catch (\Exception $e){$seeds = 0;}
+            try {$peers = (int) $itemCrawler->filter('td')->eq(3)->text();
+            } catch (\Exception $e){$peers = 0;}
+
+            $result->setName($name);
             $result->setDetailsUrl('https://thepiratebay.org'.$link);
             $result->setCategory($category);
-            $result->setSeeders((int) $itemCrawler->filter('td')->eq(2)->text());
-            $result->setLeechers((int) $itemCrawler->filter('td')->eq(3)->text());
+            $result->setSeeders($seeds);
+            $result->setLeechers($peers);
             $result->setSource(TorrentScraperService::THEPIRATEBAY);
-            $result->setMagnetUrl($itemCrawler->filterXpath('//tr/td/a')->attr('href'));
+            $result->setMagnetUrl($magnet);
             $result->setTimestamp($date->getTimestamp());
             $result->setSize($size);
             $results[] = $result;
-
         }
         return $results;
     }

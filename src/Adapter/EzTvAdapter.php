@@ -39,27 +39,34 @@ class EzTvAdapter implements AdapterInterface
         } catch (ClientException $e) {
             return [];
         }
-        
         $crawler = new Crawler((string) $response->getBody());
         $items = $crawler->filter('tr.forum_header_border');
         $results = [];
-
         foreach ($items as $item) {
-            try {
-                $result = new SearchResult();
-                $itemCrawler = new Crawler($item);
-                $save = true;
+            $result = new SearchResult();
+            $itemCrawler = new Crawler($item);
+            $save = true;
 
-                /**Seeds**/
-                try {
-                    $seeds = trim($itemCrawler->filter('td')->eq(5)->children()->text());
-                } catch (\Exception $e) {
-                    $seeds = 0;
-                }
-                $vowels = array(",", ".", " ");
-                $seeds = str_replace($vowels, "", $seeds);
+            //->critical
+            $name = null;
+            $magnet_url = null;
+            $torrent_file = null;
 
-                /**Size**/
+            try {$name = trim($itemCrawler->filter('td')->eq(1)->filter('a.epinfo')->text());
+            }catch (\Exception $e) {}
+            try {$magnet_url = $itemCrawler->filter('td')->eq(2)->filter('a.magnet')->attr('href');
+            }catch (\Exception $e) {}
+            try {$torrent_file = $itemCrawler->filter('td')->eq(2)->filter('a.download_2')->attr('href');
+            }catch (\Exception $e) {}
+            if (is_null($name) || (is_null($magnet_url)  && is_null($torrent_file))){
+                $save = false;
+                continue;
+            }
+
+                //->non critical
+            /**Size**/
+            $size_str = 0;
+            try{
                 $size_str = trim($itemCrawler->filter('td')->eq(3)->text());
                 $size_arr = explode(" ", $size_str);
                 $size = floatval($size_arr[0]);
@@ -68,43 +75,40 @@ class EzTvAdapter implements AdapterInterface
                     case 'KB':
                         $size = $size * 1 / 1024;
                         break;
-
                     case 'MB':
                         break;
-
                     case 'GB':
                         $size = $size * 1024;
                         break;
-
                     case 'TB':
                         $size = $size * 1024 * 1024;
                         break;
                 }
-                try {
-                    $magnet_url = $itemCrawler->filter('td')->eq(2)->children()->attr('href');
-                     }
-                catch (ClientException $e) {
-                    $magnet_url = null;
-                    $save = false;
-                                }
+            }catch (\Exception $e) {}
 
+                /**Seeds**/
+            $seeds = null;
+            try {
+                $seeds = trim($itemCrawler->filter('td')->eq(5)->children()->text());
+                $vowels = array(",", ".", " ");
+                $seeds = str_replace($vowels, "", $seeds);
+            } catch (\Exception $e) {$seeds = 0;}
 
-                $det_url = 'https://eztv.ag' . $itemCrawler->filter('td')->eq(1)->children()->attr('href');
-//            $rat_url = 'https://eztv.ag'. $itemCrawler->filter('td')->eq(0)->children()->attr('href');
+            $det_url = null;
+            try {$det_url = 'https://eztv.ag' . $itemCrawler->filter('td')->eq(1)->filter('a.epinfo')->attr('href');
+            }catch (\Exception $e) {}
+
+//            $rat_url = 'https:s//eztv.ag'. $itemCrawler->filter('td')->eq(0)->children()->attr('href');
 //            $result->setRating($this->getRating($rat_url));
-                $result->setName(trim($itemCrawler->filter('td')->eq(1)->text()));
-                $result->setDetailsUrl($det_url);
-                $result->setSeeders($seeds);
+            $result->setName($name);
+            $result->setDetailsUrl($det_url);
+            $result->setSeeders($seeds);
 //            $result->setLeechers($this->getPeers($det_url));
-                $result->setSource(TorrentScraperService::EZTV);
-                $result->setMagnetUrl($magnet_url);
-                $result->setSize($size);
-                if ($save) $results[] = $result;
-            }
-            catch (ClientException $e) {
-            }
+            $result->setSource(TorrentScraperService::EZTV);
+            $result->setMagnetUrl($magnet_url);
+            $result->setSize($size);
+            if ($save) $results[] = $result;
         }
-
         return $results;
     }
 
