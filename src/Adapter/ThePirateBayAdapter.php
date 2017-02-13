@@ -10,6 +10,10 @@ use SergeySMoiseev\TorrentScraper\TorrentScraperService;
 use Symfony\Component\DomCrawler\Crawler;
 use DateTime;
 use DateInterval;
+use Torrent;
+
+use Transmission\Transmission;
+
 
 class ThePirateBayAdapter implements AdapterInterface
 {
@@ -29,6 +33,8 @@ class ThePirateBayAdapter implements AdapterInterface
      */
     public function search($query)
     {
+
+
         try {
             if ($query){
                 $response = $this->httpClient->get('https://thepiratebay.se/search/' . urlencode($query) . '/0/7/0');
