@@ -27,43 +27,57 @@ class KickassTorrentsAdapter implements AdapterInterface
     public function search($query)
     {
         try {
-            $response = $this->httpClient->get('http://kickasstorrents.to/usearch/' . urlencode($query) . '/');
+            if (!empty($query)){
+                $response = $this->httpClient->get('http://kickasstorrents.to/usearch/' . urlencode($query) . '/');
+            }
+            else {$response = $this->httpClient->get('http://kickasstorrents.to/');
+            }
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             return [];
         }
-
         $crawler = new Crawler((string) $response->getBody());
-        $items = $crawler->filter('#mainSearchTable tr');
+        if (!empty($query)) {
+            $items = $crawler->filter('#mainSearchTable tr');
+        }
+        else {
+            $items = $crawler->filter('div.mainpart');
+        }
         $results = [];
-
         $i = 0;
-
         foreach ($items as $item) {
-            // Ignores advertisement and header
-            if ($i < 2) {
-                $i ++;
-
-                continue;
-            }
+//
+//            // Ignores advertisement and header
+//            if ($i < 2) {
+//
+//                $i ++;
+//                continue;
+//
+//            }
 
             $itemCrawler = new Crawler($item);
-
             $name = $itemCrawler->filter('.cellMainLink')->text();
-
-            if (!stristr($name, $query)) {
-                continue;
-            }
+//
+//            if (!stristr($name, $query)) {
+//                continue;
+//            }
 
             $data = json_decode(str_replace("'", '"', $itemCrawler->filter('div[data-sc-params]')->attr('data-sc-params')));
 
             $result = new SearchResult();
-            $result->setName($name);
-            $result->setSource(TorrentScraperService::KICKASS);
-            $result->setSeeders((int) $itemCrawler->filter('td:nth-child(5)')->text());
-            $result->setLeechers((int) $itemCrawler->filter('td:nth-child(6)')->text());
-            $result->setMagnetUrl($data->magnet);
+            $result->setName($name)
+                ->setCategory('TV shows')
+                ->setSource(TorrentScraperService::KICKASS)
+                ->setSeeders((int) $itemCrawler->filter('td:nth-child(5)')->text())
+                ->setLeechers((int) $itemCrawler->filter('td:nth-child(6)')->text())
+                ->setSize($itemCrawler->filter('td:nth-child(2)')->text())
+                ->setMagnetUrl('-')
+            ;
+
+            var_dump($result);
+            exit;
 
             $results[] = $result;
+
         }
 
         return $results;
