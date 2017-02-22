@@ -79,7 +79,6 @@ if __name__ == "__main__":
 
 
     info = scraper.api_upload("magnet:?xt=urn:btih:03633354cccd6e32c8d89efc32abc87848237d76&dn=2.Broke.Girls.S06E15.HDTV.x264-LOL%5Beztv%5D.mkv%5Beztv%5D&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A80&tr=udp%3A%2F%2Fglotorrents.pw%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=udp%3A%2F%2Fexodus.desync.com%3A6969")
-    print (info)
-    # trackers = ['udp://tracker.coppersurfer.tk:80','udp://glotorrents.pw:6969/announce','udp://tracker.leechers-paradise.org:6969','udp://tracker.opentrackr.org:1337/announce','udp://exodus.desync.com:6969']
+    print("Torrent hash:", info.get('data').get('hash'))
     trackers = ['udp://tracker.coppersurfer.tk:80','udp://glotorrents.pw:6969/announce','udp://tracker.leechers-paradise.org:6969','udp://tracker.opentrackr.org:1337/announce','udp://exodus.desync.com:6969']
     logging.info(scraper.scrape_trackers(info.get('data').get('hash'), trackers))

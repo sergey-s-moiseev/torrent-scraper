@@ -4,6 +4,9 @@ from _scraper import scrape
 import re, socket, thread, tempfile, shutil, time, os, pprint, atexit, base64, urllib
 import libtorrent as lt, logging as logger, StringIO
 
+import btdht
+import binascii
+
 get_url = default_app().get_url
 
 api_error = lambda message: {"success" : False, "message" : message }
@@ -66,9 +69,18 @@ def scrape_trackers(hash, tracker_list):
     for url in tracker_list:
         try:
             result = scrape(url, [hash])
+            if (result == None):
+                getDHT(hash)
+                break
             for hash, stats in result.iteritems():
                 print ("<<<<<<<", hash, stats)
         except (RuntimeError, NameError, ValueError, socket.timeout) as e:
             print (e)
+    getDHT(hash)
+
+def getDHT(hash):
+    dht = btdht.DHT()
+    dht.start()
+    dht.get_peers(binascii.a2b_hex(hash))
 
 pass
