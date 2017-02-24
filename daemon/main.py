@@ -16,15 +16,28 @@ def scrap(content):
   logger = logging.getLogger("scraper")
 
   _json = json.loads("".join(content))
+  result = {}
+
   try:
     data = _json.get('data')
     trackers = data.get('trackers')
     hashes = data.get('hashes')
     for tracker in trackers:
-      logger.debug(scraper.scrape(tracker,hashes))
+      _result = scraper.scrape(tracker,hashes)
+      for _hash, _info in _result.items():
+        _seeds = 0
+        _peers = 0
+
+        if _hash in result:
+          _seeds = result.get(_hash).get('seeds')
+          _peers = result.get(_hash).get('peers')
+
+        result[_hash] = {'seeds': _seeds + _info.get('seeds'), 'peers': _peers + _info.get('peers')}
   except KeyError:
     logger.exception("Wrong JSON received")
-
+    return json.dumps({})
+  finally:
+    return json.dumps(result, sort_keys=True)
 
 def handle(connection, address, queue):
   import logging
@@ -55,11 +68,13 @@ def handle(connection, address, queue):
   except:
     logger.exception("Problem handling request")
   finally:
-    scrap(content)
+    response = scrap(content)
+
     connection.send("HTTP/1.1 200 OK\n"
-                    +"Content-Type: text/html\n"
-                    +"\n" # Important!
-                    +"Ok\n")
+                  +"Content-Type: application/json\n"
+                  +"\n" # Important!
+                  + response
+                  +"\n")
 
 
 class Server:

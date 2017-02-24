@@ -1,7 +1,7 @@
 import binascii, urllib, socket, random, struct
 from bcode import bdecode
 from urlparse import urlparse, urlunsplit
-
+import logging
 
 def scrape(tracker, hashes):
   """
@@ -35,9 +35,13 @@ def scrape(tracker, hashes):
 
 
 def scrape_udp(parsed_tracker, hashes):
-  print "Scraping UDP: %s for %s hashes" % (parsed_tracker.geturl(), len(hashes))
+  logging.basicConfig(level=logging.DEBUG)
+  logging.info("Scraping UDP: %s for %s hashes" % (parsed_tracker.geturl(), len(hashes)))
+
   if len(hashes) > 74:
-    raise RuntimeError("Only 74 hashes can be scraped on a UDP tracker due to UDP limitations")
+    logging.exception("Only 74 hashes can be scraped on a UDP tracker due to UDP limitations")
+    return {}
+
   transaction_id = "\x00\x00\x04\x12\x27\x10\x19\x70";
   connection_id = "\x00\x00\x04\x17\x27\x10\x19\x80";
   try:
@@ -47,7 +51,7 @@ def scrape_udp(parsed_tracker, hashes):
 
     # Get connection ID
     req, transaction_id = udp_create_connection_request()
-    sock.sendto(req, conn);
+    sock.sendto(req, conn)
     buf = sock.recvfrom(2048)[0]
     connection_id = udp_parse_connection_response(buf, transaction_id)
 
@@ -55,14 +59,13 @@ def scrape_udp(parsed_tracker, hashes):
     req, transaction_id = udp_create_scrape_request(connection_id, hashes)
     sock.sendto(req, conn)
     buf = sock.recvfrom(2048)[0]
-  except (socket.gaierror, socket.timeout) as e:
-    print (e)
-    return None
+  except:
+    return {}
   return udp_parse_scrape_response(buf, transaction_id, hashes)
 
 
 def scrape_http(parsed_tracker, hashes):
-  print "Scraping HTTP: %s for %s hashes" % (parsed_tracker.geturl(), len(hashes))
+  logging.info("Scraping HTTP: %s for %s hashes" % (parsed_tracker.geturl(), len(hashes)))
   qs = []
   for hash in hashes:
     url_param = binascii.a2b_hex(hash)
@@ -70,12 +73,13 @@ def scrape_http(parsed_tracker, hashes):
   qs = urllib.urlencode(qs)
   pt = parsed_tracker
   url = urlunsplit((pt.scheme, pt.netloc, pt.path, qs, pt.fragment))
-  handle = urllib.urlopen(url);
-  if handle.getcode() is not 200:
-    raise RuntimeError("%s status code returned" % handle.getcode())
-
-  ret = {}
   try:
+    handle = urllib.urlopen(url, timeout=8)
+    if handle.getcode() is not 200:
+      logging.exception("%s status code returned" % handle.getcode())
+      return {}
+
+    ret = {}
     decoded = bdecode(handle.read())
     for hash, stats in decoded['files'].iteritems():
       nice_hash = binascii.b2a_hex(hash)
@@ -83,8 +87,8 @@ def scrape_http(parsed_tracker, hashes):
       p = stats["incomplete"]
       c = stats["downloaded"]
       ret[nice_hash] = {"seeds": s, "peers": p, "complete": c}
-  except (IndexError) as e:
-    ret['unknown'] = {"seeds": 0, "peers": 0, "complete": 0}
+  except:
+    ret = {}
   return ret
 
 
