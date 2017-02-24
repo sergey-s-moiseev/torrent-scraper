@@ -9,7 +9,7 @@ This library provides an abstraction to search for torrent files accross some to
 <?php
 
 $scraperService = new \SergeySMoiseev\TorrentScraper\TorrentScraperService([TorrentScraperService::EZTV, TorrentScraperService::KICKASS]);
-$results = $scraperService->search('elementaryos');
+$results = $scraperService->search('query');
 
 foreach ($results as $result) {
 	$result->getName();
@@ -38,8 +38,8 @@ for get additional information you need to send post JSON request [Content-Type:
 ```json
 {"data":
   {
-    "trackers": ["udp://tracker1.wasabii.com.tw:6969/announce",...],
-    "hashes": ["89925fb48cae260801f35fb7175530bf6e5e055a",...],
+    "trackers": ["udp://tracker1.wasabii.com.tw:6969/announce",…],
+    "hashes": ["89925fb48cae260801f35fb7175530bf6e5e055a", …],
     "callback": "http://yousite.url/callback_action",
     "private_key": "your_ip_key" 
   }
@@ -58,8 +58,7 @@ Result JSON format:
 ```json
 {"data":
     [
-      {"89925fb48cae260801f35fb7175530bf6e5e055a": {"peers": 1234, "seeds": 4321}, 
-      ...
+      {"89925fb48cae260801f35fb7175530bf6e5e055a": {"peers": 1234, "seeds": 4321}, …
     ]
 }
 ```
