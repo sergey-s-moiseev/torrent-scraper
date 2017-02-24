@@ -6,20 +6,19 @@ host = "0.0.0.0"
 port = 5000
 psize = 1025
 
-def scrap(content):
+def scrap_result(result):
   import json
   import logging
+  logging.basicConfig(level=logging.DEBUG)
+  logger = logging.getLogger("result")
 
+  logger.info(json.dumps(result, sort_keys=True))
+
+def scrap(data):
   import scraper
 
-  logging.basicConfig(level=logging.DEBUG)
-  logger = logging.getLogger("scraper")
-
-  _json = json.loads("".join(content))
   result = {}
-
   try:
-    data = _json.get('data')
     trackers = data.get('trackers')
     hashes = data.get('hashes')
     for tracker in trackers:
@@ -33,18 +32,18 @@ def scrap(content):
           _peers = result.get(_hash).get('peers')
 
         result[_hash] = {'seeds': _seeds + _info.get('seeds'), 'peers': _peers + _info.get('peers')}
-  except KeyError:
-    logger.exception("Wrong JSON received")
-    return json.dumps({})
+  except:
+    scrap_result({})
   finally:
-    return json.dumps(result, sort_keys=True)
+    scrap_result(result)
 
 def handle(connection, address, queue):
   import logging
+  import json
 
   logging.basicConfig(level=logging.DEBUG)
   logger = logging.getLogger("process-%r" % (address,))
-  headers = []
+  headers = None
   content = []
   parser = HttpParser()
 
@@ -58,7 +57,7 @@ def handle(connection, address, queue):
       assert _parsed == _recved
 
       if parser.is_headers_complete():
-        headers.append(parser.get_headers())
+        headers = parser.get_headers()
 
       if parser.is_partial_body():
         content.append(parser.recv_body())
@@ -68,14 +67,22 @@ def handle(connection, address, queue):
   except:
     logger.exception("Problem handling request")
   finally:
-    response = scrap(content)
-
-    connection.send("HTTP/1.1 200 OK\n"
-                  +"Content-Type: application/json\n"
-                  +"\n" # Important!
-                  + response
-                  +"\n")
-
+    data = None
+    try:
+      _json = json.loads("".join(content))
+      data = _json.get('data')
+    finally:
+      if data is None:
+        connection.send("HTTP/1.1 500 Error\n"
+                        +"Content-Type: application/json\n"
+                        +"\n" # Important!
+                         "Empty data JSON\n")
+      else:
+        connection.send("HTTP/1.1 200 OK\n"
+                      +"Content-Type: application/json\n"
+                      +"\n" # Important!
+                      "Ok\n")
+        queue.put({address: data})
 
 class Server:
   def __init__(self, hostname, port):
@@ -101,7 +108,13 @@ class Server:
       self.logger.debug(process)
       process.join()
       self.logger.debug(process)
-      conn.close()
+      result = self.queue.get(address)
+      if result.get(address):
+        conn.close()
+        _process = multiprocessing.Process(target=scrap, args=(result.get(address),))
+        _process.start()
+        _process.join()
+
 
 if __name__ == "__main__":
   import logging
