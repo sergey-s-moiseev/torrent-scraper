@@ -1,84 +1,106 @@
 import multiprocessing
 import socket
-import scraper
+from http_parser.parser import HttpParser
 
 host = "0.0.0.0"
 port = 5000
+psize = 1025
 
-def parse_response(x):
-    poscl = x.lower().find('\r\ncontent-length: ')
-    poseoh = x.find('\r\n\r\n')
-    if poscl < poseoh and poscl >= 0 and poseoh >= 0:
-        # found CL header
-        poseocl = x.find('\r\n',poscl+17)
-        cl = int(x[poscl+17:poseocl])
-        realdata = x[poseoh+4:]
+def scrap(content):
+  import json
+  import logging
 
-def handle(connection, address):
+  import scraper
+
+  logging.basicConfig(level=logging.DEBUG)
+  logger = logging.getLogger("scraper")
+
+  _json = json.loads("".join(content))
+  try:
+    data = _json.get('data')
+    trackers = data.get('trackers')
+    hashes = data.get('hashes')
+    for tracker in trackers:
+      logger.debug(scraper.scrape(tracker,hashes))
+  except KeyError:
+    logger.exception("Wrong JSON received")
+
+
+def handle(connection, address, queue):
+  import logging
+
+  logging.basicConfig(level=logging.DEBUG)
+  logger = logging.getLogger("process-%r" % (address,))
+  headers = []
+  content = []
+  parser = HttpParser()
+
+  try:
+    logger.debug("Connected %r at %r", connection, address)
+    while True:
+      _resp = connection.recv(psize)
+      _recved = len(_resp)
+
+      _parsed = parser.execute(_resp, _recved)
+      assert _parsed == _recved
+
+      if parser.is_headers_complete():
+        headers.append(parser.get_headers())
+
+      if parser.is_partial_body():
+        content.append(parser.recv_body())
+
+      if parser.is_message_complete():
+        break
+  except:
+    logger.exception("Problem handling request")
+  finally:
+    scrap(content)
+    connection.send("HTTP/1.1 200 OK\n"
+                    +"Content-Type: text/html\n"
+                    +"\n" # Important!
+                    +"Ok\n")
+
+
+class Server:
+  def __init__(self, hostname, port):
     import logging
-    import json
+    self.logger = logging.getLogger("server")
+    self.hostname = hostname
+    self.port = port
+    self.queue = multiprocessing.Queue()
+    self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-    logging.basicConfig(level=logging.DEBUG)
-    logger = logging.getLogger("process-%r" % (address,))
-    try:
-        logger.debug("Connected %r at %r", connection, address)
-        while True:
-            data = connection.recv(65536)
-            if data == "":
-                logger.debug("Socket closed remotely")
-                break
-            else:
-                logger.debug(parse_response(data))
-            # connection.sendall(data)
-            # logger.debug("Sent data")
-            # connection.close()
-    except:
-        logger.exception("Problem handling request")
-    finally:
-        logger.debug("Closing socket")
-        connection.close()
+  def start(self):
+    self.logger.debug("listening")
+    self.socket.bind((self.hostname, self.port))
+    self.socket.listen(1)
 
-class Server(object):
-    def __init__(self, hostname, port):
-        import logging
-        self.logger = logging.getLogger("server")
-        self.hostname = hostname
-        self.port = port
-
-    def start(self):
-        self.logger.debug("listening")
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.socket.bind((self.hostname, self.port))
-        self.socket.listen(1)
-
-        while True:
-            conn, address = self.socket.accept()
-            self.logger.debug("Got connection")
-            process = multiprocessing.Process(target=handle, args=(conn, address))
-            process.daemon = True
-            process.start()
-            self.logger.debug("Started process %r", process)
+    while True:
+      conn, address = self.socket.accept()
+      self.logger.debug("Got connection")
+      process = multiprocessing.Process(target=handle, args=(conn, address, self.queue))
+      # process.daemon = True
+      process.start()
+      self.logger.debug(process)
+      process.join()
+      self.logger.debug(process)
+      conn.close()
 
 if __name__ == "__main__":
-    import logging
-    logging.basicConfig(level=logging.DEBUG)
-    # server = Server(host, port)
-    # try:
-    #     logging.info("Listening on 5000")
-    #     server.start()
-    # except:
-    #     logging.exception("Unexpected exception")
-    # finally:
-    #     logging.info("Shutting down")
-    #     for process in multiprocessing.active_children():
-    #         logging.info("Shutting down process %r", process)
-    #         process.terminate()
-    #         process.join()
-    # logging.info("All done")
+  import logging
 
-
-    info = scraper.api_upload("magnet:?xt=urn:btih:03633354cccd6e32c8d89efc32abc87848237d76&dn=2.Broke.Girls.S06E15.HDTV.x264-LOL%5Beztv%5D.mkv%5Beztv%5D&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A80&tr=udp%3A%2F%2Fglotorrents.pw%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=udp%3A%2F%2Fexodus.desync.com%3A6969")
-    print("Torrent hash:", info.get('data').get('hash'))
-    trackers = ['udp://tracker.coppersurfer.tk:80','udp://glotorrents.pw:6969/announce','udp://tracker.leechers-paradise.org:6969','udp://tracker.opentrackr.org:1337/announce','udp://exodus.desync.com:6969']
-    logging.info(scraper.scrape_trackers(info.get('data').get('hash'), trackers))
+  logging.basicConfig(level=logging.DEBUG)
+  server = Server(host, port)
+  try:
+    logging.info("Listening on %s:%d", host, port)
+    server.start()
+  except:
+    logging.exception("Unexpected exception")
+  finally:
+    logging.info("Shutting down")
+    for process in multiprocessing.active_children():
+      logging.info("Shutting down process %r", process)
+      process.terminate()
+      process.join()
