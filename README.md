@@ -59,7 +59,7 @@ Result JSON format:
 {"data":
     [
       {"89925fb48cae260801f35fb7175530bf6e5e055a": {"peers": 1234, "seeds": 4321},
-      {"…"}
+      "…"
     ]
 }
 ```
