@@ -63,9 +63,17 @@ class TorrentScraperService
         return $results;
     }
 
-    public function scrapTorrents($torrents = []){
-        return [];
-    }
-//string 'magnet:?xt=urn:btih:3d90d8cf237306a49aa98afa7642d5a8688deb59&dn=Assassins+Creed+2016+HD-TS+ENG+SUB+x264-CPG&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Fzer0day.ch%3A1337&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Fpublic.popcorn-tracker.org%3A6969' (length=287)
+    /**
+     * @param string $query
+     * @param $callback
+     * @param $key
+     * @return array []
+     */
+    public function scrap($query, $callback, $key)
+    {
+        $results = [];
+        // TODO: Send request to python script
 
+        return $results;
+    }
 }

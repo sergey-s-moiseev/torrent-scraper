@@ -63,6 +63,19 @@ Result JSON format:
 }
 ```
 
+```php
+<?php
+
+$scraperService = new \SergeySMoiseev\TorrentScraper\TorrentScraperService();
+$query = [
+    "trackers": ["udp://tracker1.wasabii.com.tw:6969/announce","…"],
+    "hashes": ["89925fb48cae260801f35fb7175530bf6e5e055a", "…"]
+];
+$results = $scraperService->scrap($query, "http://yousite.url/callback_action", "your_ip_key");
+
+```
+Result will come on callback URL after collect information from announce trackers
+
 ## Available adapters
 
 * [ezTv](https://eztv.ag/)
