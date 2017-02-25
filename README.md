@@ -39,18 +39,17 @@ for get additional information you need to send post JSON request [Content-Type:
 {"data":
   {
     "trackers": ["udp://tracker1.wasabii.com.tw:6969/announce","…"],
-    "hashes": ["89925fb48cae260801f35fb7175530bf6e5e055a", "…"],
-    "callback": "http://yousite.url/callback_action",
-    "private_key": "your_ip_key" 
-  }
+    "hashes": ["89925fb48cae260801f35fb7175530bf6e5e055a", "…"]
+  },
+  "callback": "http://yousite.url/callback_action",
+  "private_key": "your_ip_key" 
+
 }
 ```
 Where: 
 - trackers - list of announce servers
 - hashes - torrent hashes
-
-(In development:)
-- callback - url to you callback action for result JSON 
+- callback - url to you callback action for result JSON ('http://' or 'https://" is `important`!) 
 - private_key - self generated key for protect your action (`recommendation:make new key for each request`)
 ``
 

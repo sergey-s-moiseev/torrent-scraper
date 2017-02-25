@@ -6,18 +6,42 @@ host = "0.0.0.0"
 port = 5000
 psize = 1025
 
-def scrap_result(result):
-  import json
+def scrap_result(result, url, key, is_ssl = False):
   import logging
+  import urllib
+  import httplib
+  import json
+
   logging.basicConfig(level=logging.DEBUG)
   logger = logging.getLogger("result")
 
-  logger.info(json.dumps(result, sort_keys=True))
+  headers = {"Content-type": "application/json"}
+  serv = url.split("/")
+  if is_ssl:
+    conn = httplib.HTTPSConnection(serv[0])
+  else:
+    conn = httplib.HTTPConnection(serv[0])
 
-def scrap(data):
+  params = json.dumps({'data': result, 'key': key}, sort_keys=True)
+  del serv[0]
+  conn.request("POST", ("/%s" % ('/'.join(serv))), params, headers)
+  response = conn.getresponse()
+  logger.info(response.read())
+
+  conn.close()
+
+def scrap(data, url, key):
   import scraper
 
   result = {}
+  is_ssl = False
+
+  if url[:5] == 'https':
+    url = url[8:]
+    is_ssl = True
+  elif url[:5] == 'http:':
+    url = url[7:]
+
   try:
     trackers = data.get('trackers')
     hashes = data.get('hashes')
@@ -33,9 +57,9 @@ def scrap(data):
 
         result[_hash] = {'seeds': _seeds + _info.get('seeds'), 'peers': _peers + _info.get('peers')}
   except:
-    scrap_result({})
+    scrap_result({}, url, key, is_ssl)
   finally:
-    scrap_result(result)
+    scrap_result(result, url, key, is_ssl)
 
 def handle(connection, address, queue):
   import logging
@@ -67,10 +91,11 @@ def handle(connection, address, queue):
   except:
     logger.exception("Problem handling request")
   finally:
-    data = None
     try:
       _json = json.loads("".join(content))
       data = _json.get('data')
+      url = _json.get('callback')
+      key = _json.get('private_key')
     finally:
       if data is None:
         connection.send("HTTP/1.1 500 Error\n"
@@ -82,7 +107,7 @@ def handle(connection, address, queue):
                       +"Content-Type: application/json\n"
                       +"\n" # Important!
                       "Ok\n")
-        queue.put({address: data})
+        queue.put({address: [data, url, key]})
 
 class Server:
   def __init__(self, hostname, port):
@@ -111,7 +136,7 @@ class Server:
       result = self.queue.get(address)
       if result.get(address):
         conn.close()
-        _process = multiprocessing.Process(target=scrap, args=(result.get(address),))
+        _process = multiprocessing.Process(target=scrap, args=result.get(address))
         _process.start()
         _process.join()
 
