@@ -75,7 +75,7 @@ class TorrentScraperService
             'headers' => [ 'Content-Type' => 'application/json' ]
         ]);
 
-        $response = $client->post('127.0.0.1:5050',
+        $response = $client->post('127.0.0.1:5000',
             ['body' => json_encode(
                 [
                     'data' => $query,

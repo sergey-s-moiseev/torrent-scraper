@@ -3,7 +3,7 @@ import socket
 from http_parser.parser import HttpParser
 
 host = "0.0.0.0"
-port = 5050
+port = 5000
 psize = 1025
 
 def scrap_result(result, url, key, is_ssl = False):
