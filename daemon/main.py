@@ -32,9 +32,14 @@ def scrap_result(result, url, key, is_ssl = False):
 
 def scrap(data, url, key):
   import scraper
+  import logging
+
+  logger = logging.getLogger("scrap-%r" % key)
 
   result = {}
   is_ssl = False
+
+  logger.debug("Proccess for %s" % url)
 
   if url[:5] == 'https':
     url = url[8:]
@@ -57,7 +62,7 @@ def scrap(data, url, key):
 
         result[_hash] = {'seeds': _seeds + _info.get('seeds'), 'peers': _peers + _info.get('peers')}
   except:
-    scrap_result({}, url, key, is_ssl)
+    scrap_result("Empty hashes", url, key, is_ssl)
   finally:
     scrap_result(result, url, key, is_ssl)
 
@@ -106,7 +111,8 @@ def handle(connection, address, queue):
         connection.send("HTTP/1.1 200 OK\n"
                       +"Content-Type: application/json\n"
                       +"\n" # Important!
-                      ("(%s)in queue\n"%address))
+                      +("in queue [%r]" % (address,))
+                      +"\n")
         queue.put({address: [data, url, key]})
 
 class Server:

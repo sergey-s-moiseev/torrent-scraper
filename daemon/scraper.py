@@ -65,7 +65,8 @@ def scrape_udp(parsed_tracker, hashes):
 
 
 def scrape_http(parsed_tracker, hashes):
-  logging.info("Scraping HTTP: %s for %s hashes" % (parsed_tracker.geturl(), len(hashes)))
+  logger = logging.getLogger("scrap-%r" % key)
+  logger.info("Scraping HTTP: %s for %s hashes" % (parsed_tracker.geturl(), len(hashes)))
   qs = []
   for hash in hashes:
     url_param = binascii.a2b_hex(hash)
@@ -76,7 +77,7 @@ def scrape_http(parsed_tracker, hashes):
   try:
     handle = urllib.urlopen(url, timeout=8)
     if handle.getcode() is not 200:
-      logging.exception("%s status code returned" % handle.getcode())
+      logger.exception("%s status code returned" % handle.getcode())
       return {}
 
     ret = {}
@@ -89,6 +90,7 @@ def scrape_http(parsed_tracker, hashes):
       ret[nice_hash] = {"seeds": s, "peers": p, "complete": c}
   except:
     ret = {}
+  logger.info(ret)
   return ret
 
 

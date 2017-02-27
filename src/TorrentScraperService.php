@@ -84,6 +84,6 @@ class TorrentScraperService
                 ]
             )]
         );
-        return $response;
+        return $response->getBody()->getContents();
     }
 }
