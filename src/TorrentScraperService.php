@@ -67,13 +67,23 @@ class TorrentScraperService
      * @param string $query
      * @param $callback
      * @param $key
-     * @return array []
      */
     public function scrap($query, $callback, $key)
     {
-        $results = [];
-        // TODO: Send request to python script
+        // TODO: Send request to python script and send q-id
+        $client = new \GuzzleHttp\Client([
+            'headers' => [ 'Content-Type' => 'application/json' ]
+        ]);
 
-        return $results;
+        $response = $client->post('127.0.0.1:5050',
+            ['body' => json_encode(
+                [
+                    'data' => $query,
+                    'callback' => $callback,
+                    'private_key' => $key
+                ]
+            )]
+        );
+        return $response;
     }
 }

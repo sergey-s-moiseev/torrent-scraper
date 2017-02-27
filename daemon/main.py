@@ -3,7 +3,7 @@ import socket
 from http_parser.parser import HttpParser
 
 host = "0.0.0.0"
-port = 5000
+port = 5050
 psize = 1025
 
 def scrap_result(result, url, key, is_ssl = False):
@@ -106,7 +106,7 @@ def handle(connection, address, queue):
         connection.send("HTTP/1.1 200 OK\n"
                       +"Content-Type: application/json\n"
                       +"\n" # Important!
-                      "Ok\n")
+                      ("(%s)in queue\n"%address))
         queue.put({address: [data, url, key]})
 
 class Server:
