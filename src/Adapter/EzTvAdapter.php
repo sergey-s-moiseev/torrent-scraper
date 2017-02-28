@@ -102,7 +102,8 @@ class EzTvAdapter implements AdapterInterface
 //            $result->setRating($this->getRating($rat_url));
             $result->setName($name);
             $result->setDetailsUrl($det_url);
-            $result->setSeeders($seeds);
+            $result->setSeeders((int) $seeds);
+            $result->setLeechers(0);
 //            $result->setLeechers($this->getPeers($det_url));
             $result->setSource(TorrentScraperService::EZTV);
             $result->setMagnetUrl($magnet_url);

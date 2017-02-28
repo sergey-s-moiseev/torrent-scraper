@@ -125,8 +125,8 @@ class ThePirateBayAdapter implements AdapterInterface
             $result->setName($name);
             $result->setDetailsUrl('https://thepiratebay.org'.$link);
             $result->setCategory($category);
-            $result->setSeeders($seeds);
-            $result->setLeechers($peers);
+            $result->setSeeders((int) $seeds);
+            $result->setLeechers((int) $peers);
             $result->setSource(TorrentScraperService::THEPIRATEBAY);
             $result->setMagnetUrl($magnet);
             $result->setTimestamp($date->getTimestamp());
