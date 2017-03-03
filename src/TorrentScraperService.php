@@ -102,16 +102,16 @@ class TorrentScraperService
             ]);
             $response = $client->post('127.0.0.1:5000',
                 ['body' => json_encode(
-                    [
-                        'data' => 'ping',
-                        'callback' => null,
-                        'private_key' => null
-                    ]
-                )],
-                [
+                        [
+                            'data' => 'ping',
+                            'callback' => null,
+                            'private_key' => null
+                        ]
+                    ),
                     'timeout'         => 5,
                     'connect_timeout' => 5
                 ]
+
             );
             return $response->getBody()->getContents();
         } catch(RequestException $e) {
