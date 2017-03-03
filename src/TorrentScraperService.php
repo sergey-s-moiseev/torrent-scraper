@@ -2,6 +2,7 @@
 
 namespace SergeySMoiseev\TorrentScraper;
 
+use GuzzleHttp\Exception\RequestException;
 use SergeySMoiseev\TorrentScraper\Entity\SearchResult;
 
 class TorrentScraperService
@@ -98,15 +99,20 @@ class TorrentScraperService
             ]
         ]);
 
-        $response = $client->post('127.0.0.1:5000',
-            ['body' => json_encode(
-                [
-                    'data' => 'ping',
-                    'callback' => null,
-                    'private_key' => null
-                ]
-            )]
-        );
-        return $response->getBody()->getContents();
+        try {
+            $response = $client->post('127.0.0.1:5000',
+                ['body' => json_encode(
+                    [
+                        'data' => 'ping',
+                        'callback' => null,
+                        'private_key' => null
+                    ]
+                )]
+            );
+            return $response->getBody()->getContents();
+        } catch(RequestException $e) {
+            $message = $e->getMessage();
+            return $message;
+        }
     }
 }
