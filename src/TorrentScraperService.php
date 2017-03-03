@@ -92,14 +92,14 @@ class TorrentScraperService
     public function ping()
     {
         // TODO: Send request to python script and send q-id
-        $client = new \GuzzleHttp\Client([
-            'headers' => [
-                'Content-Type' => 'application/json',
-                'timeout' => 5
-            ]
-        ]);
 
         try {
+            $client = new \GuzzleHttp\Client([
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'timeout' => 5
+                ]
+            ]);
             $response = $client->post('127.0.0.1:5000',
                 ['body' => json_encode(
                     [
@@ -107,7 +107,11 @@ class TorrentScraperService
                         'callback' => null,
                         'private_key' => null
                     ]
-                )]
+                )],
+                [
+                    'timeout'         => 5,
+                    'connect_timeout' => 5
+                ]
             );
             return $response->getBody()->getContents();
         } catch(RequestException $e) {
