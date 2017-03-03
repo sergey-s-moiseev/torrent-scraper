@@ -134,7 +134,7 @@ class TorrentScraperService
                         'callback' => null,
                         'private_key' => null
                     ]
-                )
+                  )
                 ]
 
             );
@@ -143,5 +143,5 @@ class TorrentScraperService
             $message = $e->getMessage();
             return $message;
         }
-    }}
+    }
 }
