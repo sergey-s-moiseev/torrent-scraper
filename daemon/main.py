@@ -1,10 +1,12 @@
 import multiprocessing
 import socket
+import time
 from http_parser.parser import HttpParser
 
 host = "0.0.0.0"
 port = 5000
 psize = 1025
+started = time.time()
 
 def scrap_result(result, url, key, is_ssl = False):
   import logging
@@ -66,6 +68,11 @@ def scrap(data, url, key):
   finally:
     scrap_result(result, url, key, is_ssl)
 
+def send (connection, text, error = False):
+  connection.send("HTTP/1.1 500 Error\n" if error else "HTTP/1.1 200 OK\n"
+                  +"Content-Type: application/json\n"
+                  +"\n" # Important!
+                  + text + "\n")
 def handle(connection, address, queue):
   import logging
   import json
@@ -103,17 +110,14 @@ def handle(connection, address, queue):
       key = _json.get('private_key')
     finally:
       if data is None:
-        connection.send("HTTP/1.1 500 Error\n"
-                        +"Content-Type: application/json\n"
-                        +"\n" # Important!
-                         "Empty data JSON\n")
+        queue.put({address: 'break'})
+        send(connection, "JSON Parse Error", True)
+      if data == 'ping':
+        queue.put({address: 'break'})
+        send(connection, str(started))
       else:
-        connection.send("HTTP/1.1 200 OK\n"
-                      +"Content-Type: application/json\n"
-                      +"\n" # Important!
-                      +("in queue [%r]" % (address,))
-                      +"\n")
         queue.put({address: [data, url, key]})
+        send(connection, ("in queue [%r]" % (address,)))
 
 class Server:
   def __init__(self, hostname, port):
@@ -142,9 +146,10 @@ class Server:
       result = self.queue.get(address)
       if result.get(address):
         conn.close()
-        _process = multiprocessing.Process(target=scrap, args=result.get(address))
-        _process.start()
-        _process.join()
+        if result.get(address) != 'break':
+          _process = multiprocessing.Process(target=scrap, args=result.get(address))
+          _process.start()
+          _process.join()
 
 
 if __name__ == "__main__":

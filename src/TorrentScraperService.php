@@ -86,4 +86,27 @@ class TorrentScraperService
         );
         return $response->getBody()->getContents();
     }
+
+
+    public function ping()
+    {
+        // TODO: Send request to python script and send q-id
+        $client = new \GuzzleHttp\Client([
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'timeout' => 5
+            ]
+        ]);
+
+        $response = $client->post('127.0.0.1:5000',
+            ['body' => json_encode(
+                [
+                    'data' => 'ping',
+                    'callback' => null,
+                    'private_key' => null
+                ]
+            )]
+        );
+        return $response->getBody()->getContents();
+    }
 }
