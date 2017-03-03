@@ -117,4 +117,31 @@ class TorrentScraperService
             return $message;
         }
     }
+
+
+    public function stop()
+    {
+        try {
+            $client = new \GuzzleHttp\Client([
+                'headers' => [
+                    'Content-Type' => 'application/json'
+                ]
+            ]);
+            $response = $client->post('127.0.0.1:5000',
+                ['body' => json_encode(
+                    [
+                        'data' => 'stop',
+                        'callback' => null,
+                        'private_key' => null
+                    ]
+                )
+                ]
+
+            );
+            return $response->getBody()->getContents();
+        } catch(RequestException $e) {
+            $message = $e->getMessage();
+            return $message;
+        }
+    }}
 }

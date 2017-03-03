@@ -70,9 +70,9 @@ def scrap(data, url, key):
 
 def send (connection, text, error = False):
   connection.send("HTTP/1.1 500 Error\n" if error else "HTTP/1.1 200 OK\n"
-                  +"Content-Type: application/json\n"
-                  +"\n" # Important!
-                  + text + "\n")
+                                                       +"Content-Type: application/json\n"
+                                                       +"\n" # Important!
+                                                       + text + "\n")
 def handle(connection, address, queue):
   import logging
   import json
@@ -112,9 +112,12 @@ def handle(connection, address, queue):
       if data is None:
         queue.put({address: 'break'})
         send(connection, "JSON Parse Error", True)
-      if data == 'ping':
+      elif data == 'ping':
         queue.put({address: 'break'})
         send(connection, str(started))
+      elif data == 'stop':
+        queue.put({address: 'exit'})
+        send(connection, "Shutting down")
       else:
         queue.put({address: [data, url, key]})
         send(connection, ("in queue [%r]" % (address,)))
@@ -130,6 +133,7 @@ class Server:
     self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
   def start(self):
+    import sys
     self.logger.debug("listening")
     self.socket.bind((self.hostname, self.port))
     self.socket.listen(1)
@@ -146,7 +150,14 @@ class Server:
       result = self.queue.get(address)
       if result.get(address):
         conn.close()
-        if result.get(address) != 'break':
+        if result.get(address) == 'exit':
+          logging.info("Shutting down")
+          for process in multiprocessing.active_children():
+            logging.info("Shutting down process %r", process)
+            process.terminate()
+            process.join()
+          sys.exit()
+        elif result.get(address) != 'break':
           _process = multiprocessing.Process(target=scrap, args=result.get(address))
           _process.start()
           _process.join()
