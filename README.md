@@ -76,6 +76,16 @@ $results = $scraperService->scrap($query, "http://yousite.url/callback_action", 
 ```
 Result will come on callback URL after collect information from announce trackers
 
+## Check Daemon is running
+
+```php
+<?php
+
+$scraperService = new \SergeySMoiseev\TorrentScraper\TorrentScraperService();
+$results = $scraperService->ping();
+
+```
+
 ## Available adapters
 
 * [ezTv](https://eztv.ag/)

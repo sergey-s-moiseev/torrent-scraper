@@ -71,7 +71,6 @@ class TorrentScraperService
      */
     public function scrap($query, $callback, $key)
     {
-        // TODO: Send request to python script and send q-id
         $client = new \GuzzleHttp\Client([
             'headers' => [ 'Content-Type' => 'application/json' ]
         ]);
@@ -91,7 +90,6 @@ class TorrentScraperService
 
     public function ping()
     {
-        // TODO: Send request to python script and send q-id
 
         try {
             $client = new \GuzzleHttp\Client([
