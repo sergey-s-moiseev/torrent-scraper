@@ -64,33 +64,8 @@ class TorrentScraperService
         return $results;
     }
 
-    /**
-     * @param string $query
-     * @param $callback
-     * @param $key
-     */
-    public function scrap($query, $callback, $key)
-    {
-        $client = new \GuzzleHttp\Client([
-            'headers' => [ 'Content-Type' => 'application/json' ]
-        ]);
 
-        $response = $client->post('127.0.0.1:5000',
-            ['body' => json_encode(
-                [
-                    'data' => $query,
-                    'callback' => $callback,
-                    'private_key' => $key
-                ]
-            )]
-        );
-        return $response->getBody()->getContents();
-    }
-
-
-    public function ping()
-    {
-
+    private function sendToScript($data) {
         try {
             $client = new \GuzzleHttp\Client([
                 'headers' => [
@@ -99,13 +74,7 @@ class TorrentScraperService
                 ]
             ]);
             $response = $client->post('127.0.0.1:5000',
-                ['body' => json_encode(
-                        [
-                            'data' => 'ping',
-                            'callback' => null,
-                            'private_key' => null
-                        ]
-                    ),
+                ['body' => json_encode($data),
                     'timeout'         => 5,
                     'connect_timeout' => 5
                 ]
@@ -118,30 +87,44 @@ class TorrentScraperService
         }
     }
 
+    /**
+     * @param string $query
+     * @param $callback
+     * @param $key
+     * @return string
+     */
+    public function scrap($query, $callback, $key)
+    {
+        return $this->sendToScript(
+            [
+                'data' => $query,
+                'callback' => $callback,
+                'private_key' => $key
+            ]
+        );
+    }
+
+
+    public function ping()
+    {
+        return $this->sendToScript(
+            [
+                'data' => 'ping',
+                'callback' => null,
+                'private_key' => null
+            ]
+        );
+    }
+
 
     public function stop()
     {
-        try {
-            $client = new \GuzzleHttp\Client([
-                'headers' => [
-                    'Content-Type' => 'application/json'
-                ]
-            ]);
-            $response = $client->post('127.0.0.1:5000',
-                ['body' => json_encode(
-                    [
-                        'data' => 'stop',
-                        'callback' => null,
-                        'private_key' => null
-                    ]
-                  )
-                ]
-
-            );
-            return $response->getBody()->getContents();
-        } catch(RequestException $e) {
-            $message = $e->getMessage();
-            return $message;
-        }
+        return $this->sendToScript(
+            [
+                'data' => 'stop',
+                'callback' => null,
+                'private_key' => null
+            ]
+        );
     }
 }
