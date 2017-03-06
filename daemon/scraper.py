@@ -3,8 +3,7 @@ from bcode import bdecode
 from urlparse import urlparse, urlunsplit
 import logging
 
-key = None
-def scrape(tracker, hashes, api_key):
+def scrape(tracker, hashes, info):
   """
   Returns the list of seeds, peers and downloads a torrent info_hash has, according to the specified tracker
 
@@ -25,20 +24,20 @@ def scrape(tracker, hashes, api_key):
   parsed = urlparse(tracker)
 
   if parsed.scheme == "udp":
-    return scrape_udp(parsed, hashes)
+    return scrape_udp(parsed, hashes, info)
 
   if parsed.scheme in ["http", "https"]:
     if "announce" not in tracker:
       raise RuntimeError("%s doesnt support scrape" % tracker)
     parsed = urlparse(tracker.replace("announce", "scrape"))
-    return scrape_http(parsed, hashes)
+    return scrape_http(parsed, hashes, info)
 
   raise RuntimeError("Unknown tracker scheme: %s" % parsed.scheme)
 
 
-def scrape_udp(parsed_tracker, hashes):
+def scrape_udp(parsed_tracker, hashes, info):
   logging.basicConfig(level=logging.DEBUG)
-  logging.info("Scraping UDP: %s for %s hashes" % (parsed_tracker.geturl(), len(hashes)))
+  logging.info("[%d/%d] Scraping UDP: %s for %s hashes" % (info[0], info[1], parsed_tracker.geturl(), len(hashes)))
 
   if len(hashes) > 74:
     logging.exception("Only 74 hashes can be scraped on a UDP tracker due to UDP limitations")
@@ -66,8 +65,8 @@ def scrape_udp(parsed_tracker, hashes):
   return udp_parse_scrape_response(buf, transaction_id, hashes)
 
 
-def scrape_http(parsed_tracker, hashes):
-  logging.info("Scraping HTTP: %s for %s hashes" % (parsed_tracker.geturl(), len(hashes)))
+def scrape_http(parsed_tracker, hashes, info):
+  logging.info("[%d/%d] Scraping HTTP: %s for %s hashes" % (info[0], info[1], parsed_tracker.geturl(), len(hashes)))
   qs = []
   for hash in hashes:
     url_param = binascii.a2b_hex(hash)
