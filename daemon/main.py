@@ -49,24 +49,24 @@ def scrap(data, url, key):
   elif url[:5] == 'http:':
     url = url[7:]
 
-  try:
-    trackers = data.get('trackers')
-    hashes = data.get('hashes')
-    for tracker in trackers:
-      _result = scraper.scrape(tracker,hashes)
-      for _hash, _info in _result.items():
-        _seeds = 0
-        _peers = 0
+  # try:
+  trackers = data.get('trackers')
+  hashes = data.get('hashes')
+  for tracker in trackers:
+    _result = scraper.scrape(tracker,hashes, key)
+    for _hash, _info in _result.items():
+      _seeds = 0
+      _peers = 0
 
-        if _hash in result:
-          _seeds = result.get(_hash).get('seeds')
-          _peers = result.get(_hash).get('peers')
+      if _hash in result:
+        _seeds = result.get(_hash).get('seeds')
+        _peers = result.get(_hash).get('peers')
 
-        result[_hash] = {'seeds': _seeds + _info.get('seeds'), 'peers': _peers + _info.get('peers')}
-  except:
-    scrap_result("Empty hashes", url, key, is_ssl)
-  finally:
-    scrap_result(result, url, key, is_ssl)
+      result[_hash] = {'seeds': _seeds + _info.get('seeds'), 'peers': _peers + _info.get('peers')}
+  # except:
+  #   scrap_result("Empty hashes", url, key, is_ssl)
+  # finally:
+  #   scrap_result(result, url, key, is_ssl)
 
 def send (connection, text, error = False):
   connection.send("HTTP/1.1 500 Error\n" if error else "HTTP/1.1 200 OK\n"
