@@ -3,11 +3,13 @@ import json
 
 class ScrapLog:
   def __init__(self):
+    import os
     import logging
 
     logging.basicConfig(level=logging.DEBUG)
     self.logger = logging.getLogger("scraplog")
-    self.conn = sqlite3.connect('scraplog.db')
+    path = '%s/scraplog.db' % os.path.dirname(os.path.realpath(__file__))
+    self.conn = sqlite3.connect(path)
 
   def check_tables(self):
     self.logger.info("Checking tables")
@@ -52,19 +54,19 @@ class ScrapLog:
     if to_date is None:
       to_date = today
 
-    try:
-      cursor = self.conn.cursor()
-      if from_date == to_date:
-        query = "SELECT * FROM scrap_logs WHERE date(created) = '%s'"%(from_date)
-      else:
-        query = "SELECT * FROM scrap_logs WHERE date(created) >= '%s' AND date(created) <= '%s'"%(from_date, to_date)
-      cursor.execute(query)
+    cursor = self.conn.cursor()
+    # if from_date == to_date:
+    #   query = "SELECT * FROM scrap_logs WHERE date(created) = '%s'"%(from_date)
+    # else:
+    #   query = "SELECT * FROM scrap_logs WHERE date(created) >= '%s' AND date(created) <= '%s'"%(from_date, to_date)
 
-      self.logger.info(query)
-      result = cursor.fetchall()
-      return result
-    except sqlite3.Error as e:
-      return []
+    query = "SELECT * FROM scrap_logs"
+    cursor.execute(query)
+
+    self.logger.info(query)
+    self.logger.info(self.conn)
+    result = cursor.fetchall()
+    return result
 
   def close(self):
     self.logger.info("Break Logger")
