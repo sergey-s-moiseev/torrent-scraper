@@ -2,14 +2,18 @@ import sqlite3
 import json
 
 class ScrapLog:
-  def __init__(self):
+  def __init__(self, arg_path):
     import os
+    import sys
     import logging
+
+    print sys.argv
 
     logging.basicConfig(level=logging.DEBUG)
     self.logger = logging.getLogger("scraplog")
-    path = '%s/scraplog.db' % os.path.dirname(os.path.realpath(__file__))
-    self.conn = sqlite3.connect(path)
+    path = os.path.dirname(os.path.realpath(__file__)) if arg_path is None else arg_path
+
+    self.conn = sqlite3.connect('%s/scraplog.db' % path)
 
   def check_tables(self):
     self.logger.info("Checking tables")
@@ -44,15 +48,15 @@ class ScrapLog:
 
   def add_row(self, tracker, result):
     cursor = self.conn.cursor()
-    query = "INSERT INTO scrap_errors (hashes, result, api_key, callback_url) VALUES ('%s','%s','%s','%s')"%\
-                                      (json.dumps(self.hashes), result, self.api_key, self.callback_url)
+    query = "INSERT INTO scrap_logs (tracker, hashes, result, api_key, callback_url) VALUES ('%s','%s','%s','%s','%s')"%\
+                                    (tracker, json.dumps(self.hashes), json.dumps(result), self.api_key, self.callback_url)
 
     cursor.execute(query)
 
   def add_error(self, result):
     cursor = self.conn.cursor()
-    query = "INSERT INTO scrap_errors (tracker, hashes, result, api_key, callback_url) VALUES ('%s','%s','%s','%s','%s')"% \
-            (tracker, json.dumps(self.hashes), json.dumps(result), self.api_key, self.callback_url)
+    query = "INSERT INTO scrap_errors (hashes, result, api_key, callback_url) VALUES ('%s','%s','%s','%s')"% \
+                                      (json.dumps(self.hashes), result, self.api_key, self.callback_url)
 
     cursor.execute(query)
 

@@ -1,4 +1,5 @@
 import multiprocessing
+import sys
 import socket
 import time
 from http_parser.parser import HttpParser
@@ -8,7 +9,6 @@ host = "0.0.0.0"
 port = 5000
 psize = 1025
 started = time.time()
-scrap_log = scraplog.ScrapLog()
 
 def scrap_result(result, url, key, is_ssl = False):
   import logging
@@ -35,7 +35,6 @@ def scrap_result(result, url, key, is_ssl = False):
   conn.close()
 
 def scrap(data, url, key):
-  import sys
   import scraper
   import logging
 
@@ -71,11 +70,9 @@ def scrap(data, url, key):
           _peers = result.get(_hash).get('peers')
 
         result[_hash] = {'seeds': _seeds + _info.get('seeds'), 'peers': _peers + _info.get('peers')}
-  except:
-    e = sys.exc_info()[0]
-    scrap_result(e, url, key, is_ssl)
+  except Exception as e:
+    scrap_result(str(e), url, key, is_ssl)
     scrap_log.add_error(e)
-    scrap_log.stop_logging()
   finally:
     scrap_result(result, url, key, is_ssl)
     scrap_log.stop_logging()
@@ -152,7 +149,6 @@ class Server:
     self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
   def start(self):
-    import sys
     self.logger.debug("listening")
     self.socket.bind((self.hostname, self.port))
     self.socket.listen(1)
@@ -185,9 +181,15 @@ class Server:
 
 if __name__ == "__main__":
   import logging
+  import argparse
+
+  parser = argparse.ArgumentParser(prog='scraper')
+  parser.add_argument('--db', help='database path')
+  args = parser.parse_args()
 
   logging.basicConfig(level=logging.DEBUG)
   server = Server(host, port)
+  scrap_log = scraplog.ScrapLog(args.db)
 
   try:
     logging.info("Listening on %s:%d", host, port)
