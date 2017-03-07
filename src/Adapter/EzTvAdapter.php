@@ -43,6 +43,7 @@ class EzTvAdapter implements AdapterInterface
         $items = $crawler->filter('tr.forum_header_border');
         $results = [];
         foreach ($items as $item) {
+
             $result = new SearchResult();
             $itemCrawler = new Crawler($item);
             $save = true;

@@ -33,8 +33,6 @@ class ThePirateBayAdapter implements AdapterInterface
      */
     public function search($query)
     {
-
-
         try {
             if ($query){
                 $response = $this->httpClient->get('https://thepiratebay.se/search/' . urlencode($query) . '/0/7/0');

@@ -7,6 +7,8 @@ use SergeySMoiseev\TorrentScraper\HttpClientAware;
 use SergeySMoiseev\TorrentScraper\Entity\SearchResult;
 use SergeySMoiseev\TorrentScraper\TorrentScraperService;
 use Symfony\Component\DomCrawler\Crawler;
+use DateTime;
+
 
 class KickassTorrentsAdapter implements AdapterInterface
 {
@@ -24,62 +26,95 @@ class KickassTorrentsAdapter implements AdapterInterface
      * @param string $query
      * @return SearchResult[]
      */
-    public function search($query)
+    public function search($query='')
     {
         try {
-            if (!empty($query)){
-                $response = $this->httpClient->get('http://kickasstorrents.to/usearch/' . urlencode($query) . '/');
+            if (!empty($query)) {
+                $response = [$this->httpClient->get('http://kickasstorrents.to/usearch/' . urlencode($query) . '/')];
+            } else {
+                $response['Movies'] = $this->httpClient->get('http://kickasstorrents.to/movies/');
+                $response['TV'] = $this->httpClient->get('http://kickasstorrents.to/tv/');
+                $response['Anime'] = $this->httpClient->get('http://kickasstorrents.to/anime/');
+                $response['Music'] = $this->httpClient->get('http://kickasstorrents.to/music/');
+                $response['Books'] = $this->httpClient->get('http://kickasstorrents.to/books/');
+                $response['Games'] = $this->httpClient->get('http://kickasstorrents.to/games/');
+                $response['Applications'] = $this->httpClient->get('http://kickasstorrents.to/applications/');
+                $response['XXX'] = $this->httpClient->get('http://kickasstorrents.to/xxx/');
+                $response['Other'] = $this->httpClient->get('http://kickasstorrents.to/other/');
             }
-            else {$response = $this->httpClient->get('http://kickasstorrents.to/');
-            }
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
+        } catch (\Exception $e) {
             return [];
         }
-        $crawler = new Crawler((string) $response->getBody());
-        if (!empty($query)) {
-            $items = $crawler->filter('#mainSearchTable tr');
-        }
-        else {
-            $items = $crawler->filter('div.mainpart');
-        }
         $results = [];
-        $i = 0;
-        foreach ($items as $item) {
-//
-//            // Ignores advertisement and header
-//            if ($i < 2) {
-//
-//                $i ++;
-//                continue;
-//
-//            }
+        foreach ($response as $category => $_response) {
+            $crawler = new Crawler((string)$_response->getBody());
+            $items = $crawler->filter('tr.odd, tr.even');
+            foreach ($items as $item) {
+                $itemCrawler = new Crawler($item);
 
-            $itemCrawler = new Crawler($item);
-            $name = $itemCrawler->filter('.cellMainLink')->text();
-//
-//            if (!stristr($name, $query)) {
-//                continue;
-//            }
+                /**Category**/
+                if ($query){
+                    $category = $itemCrawler->filterXPath('//*[contains(@id, "cat_")]')->filter('a')->text();
+                }
+                $name = $itemCrawler->filter('.cellMainLink')->text();
 
-            $data = json_decode(str_replace("'", '"', $itemCrawler->filter('div[data-sc-params]')->attr('data-sc-params')));
+                $age =$itemCrawler->filter('td:nth-child(4)')->text();
+                $age = iconv('UTF-8','cp1251',$age);
+                $age = str_replace(chr(160), chr(32), $age);
+                $age = iconv('cp1251','UTF-8',$age);
 
-            $result = new SearchResult();
-            $result->setName($name)
-                ->setCategory('TV shows')
-                ->setSource(TorrentScraperService::KICKASS)
-                ->setSeeders((int) $itemCrawler->filter('td:nth-child(5)')->text())
-                ->setLeechers((int) $itemCrawler->filter('td:nth-child(6)')->text())
-                ->setSize($itemCrawler->filter('td:nth-child(2)')->text())
-                ->setMagnetUrl('-')
-            ;
+                $now = new DateTime();
+                try {
+                    $date = $now->modify('- ' . $age);
+                } catch (\Exception $e) {
+                    $date = $now;
+                }
+                try{
+                    $input = $itemCrawler->filter('div.none')->attr('data-sc-params');
+                    preg_match("/'magnet': '(.{0,})'/", $input, $output);
+                    $magnet = $output[1];
+                } catch (\Exception $e) {
+                    continue;
+                }
 
-            var_dump($result);
-            exit;
+                preg_match("/'magnet': '(.{0,})'/", $input, $output);
+                $magnet = $output[1];
 
-            $results[] = $result;
+                $link = $itemCrawler->filter('.cellMainLink')->attr('href');
 
+                /**Size**/
+                $size = $itemCrawler->filter('td:nth-child(2)')->text();
+                preg_match("/MB|GB|TB|KB/", $size, $k_size);
+                preg_match("/[0-9]+(\S[0-9]+)?/", $size, $size);
+                $size =(float) $size[0];
+                switch ($k_size[0]){
+                    case 'KB':
+                        $size = $size * 1/1024;
+                        break;
+                    case 'MB':
+                        break;
+                    case 'GB':
+                        $size = $size * 1024;
+                        break;
+                    case 'TB':
+                        $size = $size * 1024*1024;
+                        break;
+                }
+                $result = new SearchResult();
+                $result->setName($name)
+                    ->setCategory($category)
+                    ->setDetailsUrl('http://kickasstorrents.to'.$link)
+                    ->setSource(TorrentScraperService::KICKASS)
+                    ->setSeeders((int)$itemCrawler->filter('td:nth-child(5)')->text())
+                    ->setLeechers((int)$itemCrawler->filter('td:nth-child(6)')->text())
+                    ->setSize($size)
+                    ->setMagnetUrl($magnet)
+                    ->setTimestamp($date->getTimestamp())
+                    ;
+
+                $results[] = $result;
+            }
         }
-
         return $results;
     }
 }
