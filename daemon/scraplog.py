@@ -23,6 +23,15 @@ class ScrapLog:
                  api_key varchar(255) NOT NULL,
                  callback_url varchar(255) NOT NULL,
                  created datetime DEFAULT current_timestamp)''')
+
+    c.execute('''CREATE TABLE IF NOT EXISTS scrap_errors
+                 (id  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                 hashes text NOT NULL,
+                 result varchar(255) NOT NULL,
+                 api_key varchar(255) NOT NULL,
+                 callback_url varchar(255) NOT NULL,
+                 created datetime DEFAULT current_timestamp)''')
+
     self.logger.info(self.conn.commit())
     self.conn.commit()
 
@@ -35,11 +44,18 @@ class ScrapLog:
 
   def add_row(self, tracker, result):
     cursor = self.conn.cursor()
-    query = "INSERT INTO scrap_logs (tracker, hashes, result, api_key, callback_url) VALUES ('%s','%s','%s','%s','%s')"%\
-                                    (tracker, json.dumps(self.hashes), json.dumps(result), self.api_key, self.callback_url)
-    self.logger.info(query)
+    query = "INSERT INTO scrap_errors (hashes, result, api_key, callback_url) VALUES ('%s','%s','%s','%s')"%\
+                                      (json.dumps(self.hashes), result, self.api_key, self.callback_url)
 
     cursor.execute(query)
+
+  def add_error(self, result):
+    cursor = self.conn.cursor()
+    query = "INSERT INTO scrap_errors (tracker, hashes, result, api_key, callback_url) VALUES ('%s','%s','%s','%s','%s')"% \
+            (tracker, json.dumps(self.hashes), json.dumps(result), self.api_key, self.callback_url)
+
+    cursor.execute(query)
+
 
   def stop_logging(self):
     self.logger.info("Stop logging")

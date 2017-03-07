@@ -35,6 +35,7 @@ def scrap_result(result, url, key, is_ssl = False):
   conn.close()
 
 def scrap(data, url, key):
+  import sys
   import scraper
   import logging
 
@@ -71,7 +72,9 @@ def scrap(data, url, key):
 
         result[_hash] = {'seeds': _seeds + _info.get('seeds'), 'peers': _peers + _info.get('peers')}
   except:
-    scrap_result("Error", url, key, is_ssl)
+    e = sys.exc_info()[0]
+    scrap_result(e, url, key, is_ssl)
+    scrap_log.add_error(e)
     scrap_log.stop_logging()
   finally:
     scrap_result(result, url, key, is_ssl)
