@@ -60,9 +60,12 @@ def scrape_udp(parsed_tracker, hashes, info):
     req, transaction_id = udp_create_scrape_request(connection_id, hashes)
     sock.sendto(req, conn)
     buf = sock.recvfrom(2048)[0]
+    ret =udp_parse_scrape_response(buf, transaction_id, hashes)
   except:
-    return {}
-  return udp_parse_scrape_response(buf, transaction_id, hashes)
+    ret = {}
+
+  logging.info(ret)
+  return ret
 
 
 def scrape_http(parsed_tracker, hashes, info):

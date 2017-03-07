@@ -104,6 +104,17 @@ class TorrentScraperService
         );
     }
 
+    public function logs($from_date = null, $to_date = null)
+    {
+        return $this->sendToScript(
+            [
+                'data' => ['interval' => [$from_date, $to_date]],
+                'callback' => null,
+                'private_key' => null
+            ]
+        );
+    }
+
 
     public function ping()
     {

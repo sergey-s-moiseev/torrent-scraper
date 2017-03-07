@@ -2,11 +2,13 @@ import multiprocessing
 import socket
 import time
 from http_parser.parser import HttpParser
+import scraplog
 
 host = "0.0.0.0"
 port = 5000
 psize = 1025
 started = time.time()
+scrap_log = scraplog.ScrapLog()
 
 def scrap_result(result, url, key, is_ssl = False):
   import logging
@@ -49,14 +51,16 @@ def scrap(data, url, key):
   elif url[:5] == 'http:':
     url = url[7:]
 
-  # try:
   trackers = data.get('trackers')
   hashes = data.get('hashes')
+  scrap_log.start_logging(key, url, hashes)
+
   try:
     _cur = 0
     for tracker in trackers:
       _cur += 1
       _result = scraper.scrape(tracker,hashes, [_cur, len(trackers)])
+      scrap_log.add_row(tracker, _result)
       for _hash, _info in _result.items():
         _seeds = 0
         _peers = 0
@@ -67,9 +71,11 @@ def scrap(data, url, key):
 
         result[_hash] = {'seeds': _seeds + _info.get('seeds'), 'peers': _peers + _info.get('peers')}
   except:
-    scrap_result("Empty hashes", url, key, is_ssl)
+    scrap_result("Error", url, key, is_ssl)
+    scrap_log.stop_logging()
   finally:
     scrap_result(result, url, key, is_ssl)
+    scrap_log.stop_logging()
 
 def send (connection, text, error = False):
   connection.send("HTTP/1.1 500 Error\n" if error else "HTTP/1.1 200 OK\n"
@@ -106,6 +112,7 @@ def handle(connection, address, queue):
   except:
     logger.exception("Problem handling request")
   finally:
+    _json = {}
     try:
       _json = json.loads("".join(content))
       data = _json.get('data')
@@ -122,8 +129,14 @@ def handle(connection, address, queue):
         queue.put({address: 'exit'})
         send(connection, "Shutting down")
       else:
-        queue.put({address: [data, url, key]})
-        send(connection, ("in queue [%r]" % (address,)))
+        if 'interval' in data:
+          interval = data.get('interval')
+          logs = scrap_log.get_logs(interval[0],interval[1])
+          queue.put({address: 'break'})
+          send(connection, json.dumps(logs))
+        elif 'trackers' in data and 'hashes' in data:
+          queue.put({address: [data, url, key]})
+          send(connection, ("in queue [%r]" % (address,)))
 
 class Server:
   def __init__(self, hostname, port):
@@ -155,6 +168,7 @@ class Server:
         conn.close()
         if result.get(address) == 'exit':
           logging.info("Shutting down")
+          scrap_log.close()
           for process in multiprocessing.active_children():
             logging.info("Shutting down process %r", process)
             process.terminate()
@@ -171,13 +185,16 @@ if __name__ == "__main__":
 
   logging.basicConfig(level=logging.DEBUG)
   server = Server(host, port)
+
   try:
     logging.info("Listening on %s:%d", host, port)
+    scrap_log.check_tables()
     server.start()
   except:
     logging.exception("Unexpected exception")
   finally:
     logging.info("Shutting down")
+    scrap_log.close()
     for process in multiprocessing.active_children():
       logging.info("Shutting down process %r", process)
       process.terminate()
