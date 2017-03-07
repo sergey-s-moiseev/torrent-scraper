@@ -113,6 +113,7 @@ def handle(connection, address, queue):
     logger.exception("Problem handling request")
   finally:
     _json = {}
+    data = None
     try:
       _json = json.loads("".join(content))
       data = _json.get('data')
