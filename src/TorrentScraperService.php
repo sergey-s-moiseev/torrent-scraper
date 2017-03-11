@@ -58,7 +58,8 @@ class TorrentScraperService
         $results = [];
 
         foreach ($this->adapters as $adapter) {
-            $results = array_merge($adapter->search($query), $results);
+            $result = $adapter->search($query);
+            $results = array_merge($result, $results);
         }
 
         return $results;
