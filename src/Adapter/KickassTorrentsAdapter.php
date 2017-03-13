@@ -32,15 +32,15 @@ class KickassTorrentsAdapter implements AdapterInterface
             if (!empty($query)) {
                 $response = [$this->httpClient->get('http://kickasstorrents.to/usearch/' . urlencode($query) . '/')];
             } else {
-                $response['Movies'] = $this->httpClient->get('http://kickasstorrents.to/movies/');
-                $response['TV'] = $this->httpClient->get('http://kickasstorrents.to/tv/');
-                $response['Anime'] = $this->httpClient->get('http://kickasstorrents.to/anime/');
-                $response['Music'] = $this->httpClient->get('http://kickasstorrents.to/music/');
-                $response['Books'] = $this->httpClient->get('http://kickasstorrents.to/books/');
-                $response['Games'] = $this->httpClient->get('http://kickasstorrents.to/games/');
-                $response['Applications'] = $this->httpClient->get('http://kickasstorrents.to/applications/');
-                $response['XXX'] = $this->httpClient->get('http://kickasstorrents.to/xxx/');
-                $response['Other'] = $this->httpClient->get('http://kickasstorrents.to/other/');
+                $response['Movies'] = $this->httpClient->get('http://kickasstorrents.to/movies/?field=time_add&sorder=desc');
+                $response['TV'] = $this->httpClient->get('http://kickasstorrents.to/tv/?field=time_add&sorder=desc');
+                $response['Anime'] = $this->httpClient->get('http://kickasstorrents.to/anime/?field=time_add&sorder=desc');
+                $response['Music'] = $this->httpClient->get('http://kickasstorrents.to/music/?field=time_add&sorder=desc');
+                $response['Books'] = $this->httpClient->get('http://kickasstorrents.to/books/?field=time_add&sorder=desc');
+                $response['Games'] = $this->httpClient->get('http://kickasstorrents.to/games/?field=time_add&sorder=desc');
+                $response['Applications'] = $this->httpClient->get('http://kickasstorrents.to/applications/?field=time_add&sorder=desc');
+                $response['XXX'] = $this->httpClient->get('http://kickasstorrents.to/xxx/?field=time_add&sorder=desc');
+                $response['Other'] = $this->httpClient->get('http://kickasstorrents.to/other/?field=time_add&sorder=desc');
             }
         } catch (\Exception $e) {
             return [];
@@ -54,11 +54,18 @@ class KickassTorrentsAdapter implements AdapterInterface
 
                 /**Category**/
                 if ($query){
-                    $category = $itemCrawler->filterXPath('//*[contains(@id, "cat_")]')->filter('a')->text();
+                    try{
+                        $category = $itemCrawler->filterXPath('//*[contains(@id, "cat_")]')->filter('a')->text();
+                    } catch (\Exception $e) {
+                        continue;
+                    }
                 }
-                $name = $itemCrawler->filter('.cellMainLink')->text();
-
-                $age =$itemCrawler->filter('td:nth-child(4)')->text();
+                try{
+                    $name = $itemCrawler->filter('.cellMainLink')->text();
+                    $age =$itemCrawler->filter('td.center:nth-child(4)')->text();
+                } catch (\Exception $e) {
+                    continue;
+                }
                 $age = iconv('UTF-8','cp1251',$age);
                 $age = str_replace(chr(160), chr(32), $age);
                 $age = iconv('cp1251','UTF-8',$age);
@@ -69,7 +76,7 @@ class KickassTorrentsAdapter implements AdapterInterface
                 } catch (\Exception $e) {
                     $date = $now;
                 }
-                try{
+                try {
                     $input = $itemCrawler->filter('div.none')->attr('data-sc-params');
                     preg_match("/'magnet': '(.{0,})'/", $input, $output);
                     $magnet = $output[1];
@@ -79,11 +86,19 @@ class KickassTorrentsAdapter implements AdapterInterface
 
                 preg_match("/'magnet': '(.{0,})'/", $input, $output);
                 $magnet = $output[1];
-
-                $link = $itemCrawler->filter('.cellMainLink')->attr('href');
+                try {
+                    $link = $itemCrawler->filter('.cellMainLink')->attr('href');
+                } catch (\Exception $e) {
+                    continue;
+                }
 
                 /**Size**/
-                $size = $itemCrawler->filter('td:nth-child(2)')->text();
+                try {
+                    $size = $itemCrawler->filter('td:nth-child(2)')->text();
+                } catch (\Exception $e) {
+                    continue;
+                }
+
                 preg_match("/MB|GB|TB|KB/", $size, $k_size);
                 preg_match("/[0-9]+(\S[0-9]+)?/", $size, $size);
                 $size =(float) $size[0];
@@ -111,7 +126,6 @@ class KickassTorrentsAdapter implements AdapterInterface
                     ->setMagnetUrl($magnet)
                     ->setTimestamp($date->getTimestamp())
                     ;
-
                 $results[] = $result;
             }
         }
