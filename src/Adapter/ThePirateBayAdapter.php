@@ -71,23 +71,37 @@ class ThePirateBayAdapter implements AdapterInterface
                 continue;}
 
             $now = new DateTime();
-            preg_match("/(\d{2})-(\d{2})|Today|Y-day/", $desc, $date_str);
-            $year = (preg_match("/(\d{4})[^\.]/", $desc, $year)) ? $year[1] : $now->format('Y');
-            preg_match("/MiB|GiB|TiB|KiB/", $desc, $k_size);
-            preg_match("/Size\s(\d{1,}(\.\d{1,})?)/", $desc, $size);
-            /**@var $date [0] DateTime**/
-            if ($date_str[0] == 'Today') {
-                $date = new DateTime('now');
+
+            /** Time */
+            if(!preg_match("/\d{2}:\d{2}/", $desc, $time_str)){
+                $time_str[0] = '00:00';
             }
-            elseif ($date_str[0] == 'Y-day') {
-                $date = new DateTime('now');
-                $date->sub(new DateInterval('P1D'));
-            } else {
-                $date = new DateTime();
-                $date->setDate($year, $date_str[1], $date_str[2]);
-            }
+            /** Month Day */
+            if(preg_match("/\d{2}-\d{2}|Today|Y-day/", $desc, $date_str)){
+                if ($date_str[0] == 'Today') {
+                    $month_day = $now->format('m-j');
+                }
+                elseif ($date_str[0] == 'Y-day') {
+                    $month_day = $now->modify('-1 day')->format('m-j');
+
+                } else {
+                    $month_day = $date_str[0];
+                }
+            } else{
+                $month_day = $now->format('m-j');
+            };
+
+            /** Year */
+            $year = (preg_match("/(\d{4}),[^\.]/", $desc, $year)) ? $year[1] : $now->format('Y');
+
+            /** DateTime object */
+            $date_time_str = $month_day.'-'.$year.' '.$time_str[0];
+            $date = \DateTime::createFromFormat('m-j-Y H:i', $date_time_str);
 
             /**Size**/
+            preg_match("/MiB|GiB|TiB|KiB/", $desc, $k_size);
+            preg_match("/Size\s(\d{1,}(\.\d{1,})?)/", $desc, $size);
+
             $size=(float) $size[1];
             switch ($k_size[0]){
                 case 'KiB':

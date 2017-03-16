@@ -37,7 +37,7 @@ class EzTvAdapter implements AdapterInterface
     {
         try {
             $response = $this->httpClient->get('https://eztv.ag/search/' . $this->transformSearchString($query));
-        } catch (ClientException $e) {
+        } catch (\Exception $e) {
             return [];
         }
 
