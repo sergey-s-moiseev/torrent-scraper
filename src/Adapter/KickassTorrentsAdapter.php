@@ -95,10 +95,6 @@ class KickassTorrentsAdapter implements AdapterInterface
                 /**Size**/
                 try {
                     $size = $itemCrawler->filter('td:nth-child(2)')->text();
-                } catch (\Exception $e) {
-                    continue;
-                }
-
                 preg_match("/MB|GB|TB|KB/", $size, $k_size);
                 preg_match("/[0-9]+(\S[0-9]+)?/", $size, $size);
                 $size =(float) $size[0];
@@ -115,6 +111,9 @@ class KickassTorrentsAdapter implements AdapterInterface
                         $size = $size * 1024*1024;
                         break;
                 }
+                } catch (\Exception $e) {
+                    continue;
+                }
                 $result = new SearchResult();
                 $result->setName($name)
                     ->setCategory($category)
@@ -129,6 +128,7 @@ class KickassTorrentsAdapter implements AdapterInterface
                 $results[] = $result;
             }
         }
+        echo "\n KA -ok \n";
         return $results;
     }
 }

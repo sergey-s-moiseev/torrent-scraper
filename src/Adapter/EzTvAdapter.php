@@ -153,6 +153,8 @@ class EzTvAdapter implements AdapterInterface
             $result->setSize($size);
             if ($save) $results[] = $result;
         }
+        echo "\n EZ -ok \n";
+
         return $results;
     }
 

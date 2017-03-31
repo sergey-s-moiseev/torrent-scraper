@@ -7,6 +7,7 @@ use SergeySMoiseev\TorrentScraper\AdapterInterface;
 use SergeySMoiseev\TorrentScraper\HttpClientAware;
 use SergeySMoiseev\TorrentScraper\Entity\SearchResult;
 use SergeySMoiseev\TorrentScraper\TorrentScraperService;
+use Symfony\Component\Debug\ExceptionHandler;
 use Symfony\Component\DomCrawler\Crawler;
 use DateTime;
 use DateInterval;
@@ -72,53 +73,59 @@ class ThePirateBayAdapter implements AdapterInterface
 
             $now = new DateTime();
 
-            /** Time */
-            if(!preg_match("/\d{2}:\d{2}/", $desc, $time_str)){
-                $time_str[0] = '00:00';
-            }
-            /** Month Day */
-            if(preg_match("/\d{2}-\d{2}|Today|Y-day/", $desc, $date_str)){
-                if ($date_str[0] == 'Today') {
-                    $month_day = $now->format('m-j');
+            try {
+                /** Time */
+                if (!preg_match("/\d{2}:\d{2}/", $desc, $time_str)) {
+                    $time_str[0] = '00:00';
                 }
-                elseif ($date_str[0] == 'Y-day') {
-                    $month_day = $now->modify('-1 day')->format('m-j');
+                /** Month Day */
+                if (preg_match("/\d{2}-\d{2}|Today|Y-day/", $desc, $date_str)) {
+                    if ($date_str[0] == 'Today') {
+                        $month_day = $now->format('m-j');
+                    } elseif ($date_str[0] == 'Y-day') {
+                        $month_day = $now->modify('-1 day')->format('m-j');
 
+                    } else {
+                        $month_day = $date_str[0];
+                    }
                 } else {
-                    $month_day = $date_str[0];
-                }
-            } else{
-                $month_day = $now->format('m-j');
-            };
+                    $month_day = $now->format('m-j');
+                };
 
-            /** Year */
-            $year = (preg_match("/(\d{4}),[^\.]/", $desc, $year)) ? $year[1] : $now->format('Y');
+                /** Year */
+                $year = (preg_match("/(\d{4}),[^\.]/", $desc, $year)) ? $year[1] : $now->format('Y');
 
-            /** DateTime object */
-            $date_time_str = $month_day.'-'.$year.' '.$time_str[0];
-            $date = \DateTime::createFromFormat('m-j-Y H:i', $date_time_str);
-
-            /**Size**/
-            preg_match("/MiB|GiB|TiB|KiB/", $desc, $k_size);
-            preg_match("/Size\s(\d{1,}(\.\d{1,})?)/", $desc, $size);
-
-            $size=(float) $size[1];
-            switch ($k_size[0]){
-                case 'KiB':
-                    $size = $size * 1/1024;
-                    break;
-
-                case 'MiB':
-                    break;
-
-                case 'GiB':
-                    $size = $size * 1024;
-                    break;
-
-                case 'TiB':
-                    $size = $size * 1024*1024;
-                    break;
+                /** DateTime object */
+                $date_time_str = $month_day . '-' . $year . ' ' . $time_str[0];
+                $date = \DateTime::createFromFormat('m-j-Y H:i', $date_time_str);
+            } catch (\Exception $e){
+                $date = $now;
             }
+
+            try {
+                /**Size**/
+                preg_match("/MiB|GiB|TiB|KiB/", $desc, $k_size);
+                preg_match("/Size\s(\d{1,}(\.\d{1,})?)/", $desc, $size);
+
+                $size = (float)$size[1];
+                switch ($k_size[0]) {
+                    case 'KiB':
+                        $size = $size * 1 / 1024;
+                        break;
+
+                    case 'MiB':
+                        break;
+
+                    case 'GiB':
+                        $size = $size * 1024;
+                        break;
+
+                    case 'TiB':
+                        $size = $size * 1024 * 1024;
+                        break;
+                }
+            } catch (\Exception $e){continue;};
+
             /**Category**/
             try {
                 $category = trim($itemCrawler->filter('.vertTh')->text());
@@ -145,6 +152,7 @@ class ThePirateBayAdapter implements AdapterInterface
             $result->setSize($size);
             $results[] = $result;
         }
+        echo "\n TPB -ok \n";
         return $results;
     }
 }
