@@ -8,6 +8,7 @@ use SergeySMoiseev\TorrentScraper\HttpClientAware;
 use SergeySMoiseev\TorrentScraper\Entity\SearchResult;
 use SergeySMoiseev\TorrentScraper\TorrentScraperService;
 use Symfony\Component\DomCrawler\Crawler;
+use DateTime;
 
 class EzTvAdapter implements AdapterInterface
 {
@@ -36,14 +37,15 @@ class EzTvAdapter implements AdapterInterface
     {
         try {
             $response = $this->httpClient->get('https://eztv.ag/search/' . $this->transformSearchString($query));
-        } catch (ClientException $e) {
+        } catch (\Exception $e) {
             return [];
         }
+
+
         $crawler = new Crawler((string) $response->getBody());
         $items = $crawler->filter('tr.forum_header_border');
         $results = [];
         foreach ($items as $item) {
-
             $result = new SearchResult();
             $itemCrawler = new Crawler($item);
             $save = true;
@@ -87,7 +89,45 @@ class EzTvAdapter implements AdapterInterface
                 }
             }catch (\Exception $e) {}
 
-                /**Seeds**/
+            /** Time **/
+            $now = new DateTime();
+            try{
+                $age = trim($itemCrawler->filter('td')->eq(4)->text());
+                $age = iconv('UTF-8','cp1251',$age);
+                $age = str_replace(chr(160), chr(32), $age);
+                $age = iconv('cp1251','UTF-8',$age);
+                $_age = [];
+                $minus = ' ';
+                if(preg_match("/([0-9]{1,2})m\s([1-9]{1,2})s/", $age, $output)) {
+                    $_age = preg_replace("/([0-9]{1,2})m\s([1-9]{1,2})s/", "$1minutes $2seconds", $age);
+                    $minus = ' - ';
+                }
+                if(preg_match("/([0-9]{1,2})h\s([1-9]{1,2})m/", $age, $output)) {
+                    $_age = preg_replace("/([0-9]{1,2})h\s([1-9]{1,2})m/", "$1hours $2minutes", $age);
+                    $minus = ' - ';
+                }
+                if(preg_match("/([0-9]{1,2})d\s([1-9]{1,2})h/", $age, $output)) {
+                    $_age = preg_replace("/([0-9]{1,2})d\s([1-9]{1,2})h/", "$1days $2hours", $age);
+                    $minus = ' - ';
+                }
+
+                if (preg_match("/[0-9]{1,2}\sweek\w*/", $age, $output)) {
+                    $_age = $output[0];
+                }
+                if (preg_match("/[0-9]{1,2}\smo\w*/", $age, $output)) {
+                    $_age = preg_replace("/([0-9]{1,2})\smo\w*/", "$1 month", $age);
+                }
+                if (preg_match("/[0-9]{1,2}\syear\w*/", $age, $output)) {
+                    $_age = $output[0];
+                }
+
+                $_age = explode(' ', $_age);
+                $date = $now->modify('- '.$_age[0].$minus.$_age[1]);
+            } catch (\Exception $e) {
+                $date = $now;
+            }
+
+             /**Seeds**/
             $seeds = null;
             try {
                 $seeds = trim($itemCrawler->filter('td')->eq(5)->children()->text());
@@ -95,9 +135,10 @@ class EzTvAdapter implements AdapterInterface
                 $seeds = str_replace($vowels, "", $seeds);
             } catch (\Exception $e) {$seeds = 0;}
 
-            $det_url = null;
             try {$det_url = 'https://eztv.ag' . $itemCrawler->filter('td')->eq(1)->filter('a.epinfo')->attr('href');
-            }catch (\Exception $e) {}
+            }catch (\Exception $e) {
+                $det_url = 'https://eztv.ag';
+            }
 
 //            $rat_url = 'https:s//eztv.ag'. $itemCrawler->filter('td')->eq(0)->children()->attr('href');
 //            $result->setRating($this->getRating($rat_url));
@@ -105,12 +146,15 @@ class EzTvAdapter implements AdapterInterface
             $result->setDetailsUrl($det_url);
             $result->setSeeders((int) $seeds);
             $result->setLeechers(0);
+            $result->setTimestamp($date->getTimestamp());
 //            $result->setLeechers($this->getPeers($det_url));
             $result->setSource(TorrentScraperService::EZTV);
             $result->setMagnetUrl($magnet_url);
             $result->setSize($size);
             if ($save) $results[] = $result;
         }
+        echo "\n EZ -ok \n";
+
         return $results;
     }
 
