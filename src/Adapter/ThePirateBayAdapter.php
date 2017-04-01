@@ -76,17 +76,18 @@ class ThePirateBayAdapter implements AdapterInterface
             preg_match("/MiB|GiB|TiB|KiB/", $desc, $k_size);
             preg_match("/Size\s(\d{1,}(\.\d{1,})?)/", $desc, $size);
             /**@var $date [0] DateTime**/
-            if ($date_str[0] == 'Today') {
-                $date = new DateTime('now');
-            }
-            elseif ($date_str[0] == 'Y-day') {
-                $date = new DateTime('now');
-                $date->sub(new DateInterval('P1D'));
-            } else {
-                $date = new DateTime();
-                $date->setDate($year, $date_str[1], $date_str[2]);
-            }
-
+            try {
+                if ($date_str[0] == 'Today') {
+                    $date = new DateTime('now');
+                }
+                elseif ($date_str[0] == 'Y-day') {
+                    $date = new DateTime('now');
+                    $date->sub(new DateInterval('P1D'));
+                } else {
+                    $date = new DateTime();
+                    $date->setDate($year, $date_str[1], $date_str[2]);
+                }
+            } catch (\Exception $e){$date = new DateTime('now');}
             /**Size**/
             $size=(float) $size[1];
             switch ($k_size[0]){
@@ -112,6 +113,7 @@ class ThePirateBayAdapter implements AdapterInterface
                 preg_match('/\(((.?)+)\)/', $category, $child_cat);
                 $category = implode(":", [$parent_cat[0], $child_cat[1]]);
             } catch (\Exception $e){$category = null;}
+
             try {
                 $link = $itemCrawler->filter('.detName')->children(1)->attr('href');
             } catch (\Exception $e){$link = null;}
