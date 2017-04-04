@@ -32,7 +32,7 @@ class ThePirateBayAdapter implements AdapterInterface
      * @param string $query
      * @return SearchResult[]
      */
-    public function search($query)
+    public function search($query='')
     {
         try {
             if ($query){
@@ -152,7 +152,7 @@ class ThePirateBayAdapter implements AdapterInterface
             $result->setSize($size);
             $results[] = $result;
         }
-        echo "\n TPB -ok \n";
+        echo "\n TPB - completed. ".count($results)." crawled \n";
         return $results;
     }
 }
