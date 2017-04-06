@@ -33,7 +33,7 @@ class EzTvAdapter implements AdapterInterface
      * @param string $query
      * @return SearchResult[]
      */
-    public function search($query)
+    public function search($query='')
     {
         try {
             $response = $this->httpClient->get('https://eztv.ag/search/' . $this->transformSearchString($query));
@@ -142,6 +142,7 @@ class EzTvAdapter implements AdapterInterface
 
 //            $rat_url = 'https:s//eztv.ag'. $itemCrawler->filter('td')->eq(0)->children()->attr('href');
 //            $result->setRating($this->getRating($rat_url));
+            $result->setCategory('Tv Show');
             $result->setName($name);
             $result->setDetailsUrl($det_url);
             $result->setSeeders((int) $seeds);
@@ -153,7 +154,7 @@ class EzTvAdapter implements AdapterInterface
             $result->setSize($size);
             if ($save) $results[] = $result;
         }
-        echo "\n EZ -ok \n";
+        echo "\n EZ - completed. ".count($results)." crawled \n";
 
         return $results;
     }

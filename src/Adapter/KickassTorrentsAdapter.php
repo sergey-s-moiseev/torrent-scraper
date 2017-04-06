@@ -128,7 +128,7 @@ class KickassTorrentsAdapter implements AdapterInterface
                 $results[] = $result;
             }
         }
-        echo "\n KA -ok \n";
+        echo "\n KA - completed. ".count($results)." crawled\n";
         return $results;
     }
 }
