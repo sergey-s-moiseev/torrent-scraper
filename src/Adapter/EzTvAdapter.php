@@ -142,6 +142,7 @@ class EzTvAdapter implements AdapterInterface
 
 //            $rat_url = 'https:s//eztv.ag'. $itemCrawler->filter('td')->eq(0)->children()->attr('href');
 //            $result->setRating($this->getRating($rat_url));
+            $result->setCategory('Tv Show');
             $result->setName($name);
             $result->setDetailsUrl($det_url);
             $result->setSeeders((int) $seeds);

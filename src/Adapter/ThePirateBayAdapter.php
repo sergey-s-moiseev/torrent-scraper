@@ -34,9 +34,10 @@ class ThePirateBayAdapter implements AdapterInterface
      */
     public function search($query='')
     {
+        $query = 'walking';
         try {
             if ($query){
-                $response = $this->httpClient->get('https://thepiratebay.se/search/' . urlencode($query) . '/0/7/0');
+                $response = $this->httpClient->get('https://thepiratebay.org/search/' . urlencode($query) . '/0/7/0');
             } else {
                 // $response = $this->httpClient->get('https://thepiratebay.se/recent');
                 $response = $this->httpClient->get('https://thepiratebay.org/top/all');
@@ -50,7 +51,6 @@ class ThePirateBayAdapter implements AdapterInterface
 
         $results = [];
         $first = true;
-
         foreach ($items as $item) {
             // Ignore the first row, the header
             if ($first) {
@@ -62,14 +62,18 @@ class ThePirateBayAdapter implements AdapterInterface
             $itemCrawler = new Crawler($item);
             try{
                 $desc = trim($itemCrawler->filter('.detDesc')->text());
-            } catch (\Exception $e) {$desc = null;}
-            try {
-                $name = ($itemCrawler->filter('.detName')->text());
-            } catch (\Exception $e) {$name = null;
-                continue;}
-            try {$magnet = $itemCrawler->filterXpath('//tr/td/a')->attr('href');
-            } catch (\Exception $e){$magnet = null;
-                continue;}
+                $name = trim($itemCrawler->filter('.detName')->filter('a')->text());
+                $magnet = $itemCrawler->filterXpath('//tr/td/a')->attr('href');
+                $attr = null;
+                $verified = false;
+                for ($i = 1; ($i <= 4 && $verified == false); $i++){
+                    try {
+                        $attr = $itemCrawler->filter('td')->eq('1')->filter('a')->eq($i)->filter('img')->attr('title');
+                    } catch (\Exception $e){$attr = null;}
+                    if ($attr == 'VIP' || $attr == 'Trusted'){$verified = true;}
+                }
+                if ($verified == false){continue;}
+            } catch (\Exception $e){continue;}
 
             $now = new DateTime();
 
@@ -123,8 +127,11 @@ class ThePirateBayAdapter implements AdapterInterface
                     case 'TiB':
                         $size = $size * 1024 * 1024;
                         break;
+
                 }
-            } catch (\Exception $e){continue;};
+            } catch (\Exception $e){
+//                var_dump('last') ;        var_dump($desc);
+                continue;};
 
             /**Category**/
             try {
@@ -152,7 +159,7 @@ class ThePirateBayAdapter implements AdapterInterface
             $result->setSize($size);
             $results[] = $result;
         }
-        echo "\n TPB - completed. ".count($results)." crawled \n";
+        echo "\n TPB - completed. ".count($results)." trusted crawled \n";
         return $results;
     }
 }
