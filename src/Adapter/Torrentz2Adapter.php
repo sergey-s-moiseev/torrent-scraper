@@ -73,6 +73,7 @@ class Torrentz2Adapter implements AdapterInterface
                         $name = $itemCrawler->filter('a')->text();
             /**Hash**/
                         $hash = $itemCrawler->filter('a')->attr('href');
+                        $hash = strtolower($hash);
                         if ($hash) $hash = substr($hash, 1);
                         $magnet = 'magnet:?xt=urn:btih:' . $hash . '&dn=' . $name;
             /**Size**/
@@ -120,7 +121,7 @@ class Torrentz2Adapter implements AdapterInterface
                         $leechers = (int)str_replace([',', '.'], '', $itemCrawler->filter('dd')->filter('span:nth-child(5)')->text());;
                     } catch (\Exception $e) {}
 
-                    if (in_array($hash, $hashes) == false) {
+                    if (1||in_array($hash, $hashes) == false) {
                         $result = new SearchResult();
                         $result->setName($name)
                             ->setCategory($category)
