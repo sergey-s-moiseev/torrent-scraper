@@ -76,7 +76,11 @@ class Torrentz2Adapter implements AdapterInterface
                         $hash = strtolower($hash);
                         if ($hash) $hash = substr($hash, 1);
                         $magnet = 'magnet:?xt=urn:btih:' . $hash . '&dn=' . $name;
-            /**Size**/
+
+            /**Validate hash **/
+                        if(!(preg_match("/^[a-f0-9]{40}$/",$hash))){continue;}
+
+                        /**Size**/
                         $size = $itemCrawler->filter('dd')->filter('span:nth-child(3)')->text();
                         preg_match("/MB|GB|TB|KB/", $size, $k_size);
                         preg_match("/[0-9]+(\S[0-9]+)?/", $size, $size);

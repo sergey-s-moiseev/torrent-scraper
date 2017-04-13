@@ -97,8 +97,11 @@ class KickassTorrentsAdapter implements AdapterInterface
                     continue;
                 }
 
-                preg_match("/'magnet': '(.{0,})'/", $input, $output);
-                $magnet = $output[1];
+                /**Validate hash **/
+                preg_match("/urn:btih:(.{40}).*/",$magnet,$out);
+                $hash = strtolower($out[1]);
+                if(!(preg_match("/^[a-f0-9]{40}$/",$hash))){continue;}
+
                 try {
                     $link = $itemCrawler->filter('.cellMainLink')->attr('href');
                 } catch (\Exception $e) {
