@@ -75,6 +75,13 @@ class ThePirateBayAdapter implements AdapterInterface
                 if ($verified == false){continue;}
             } catch (\Exception $e){continue;}
 
+            /**Validate hash **/
+            preg_match("/urn:btih:(.{40}).*/",$magnet,$out);
+            $hash = strtolower($out[1]);
+            if(!(preg_match("/^[a-f0-9]{40}$/",$hash))){continue;}
+
+
+
             $now = new DateTime();
 
             try {

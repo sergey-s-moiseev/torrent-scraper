@@ -71,13 +71,14 @@ def scrape_udp(parsed_tracker, hashes, info):
 def scrape_http(parsed_tracker, hashes, info):
   logging.info("[%d/%d] Scraping HTTP: %s for %s hashes" % (info[0], info[1], parsed_tracker.geturl(), len(hashes)))
   qs = []
-  for hash in hashes:
-    url_param = binascii.a2b_hex(hash)
-    qs.append(("info_hash", url_param))
-  qs = urllib.urlencode(qs)
-  pt = parsed_tracker
-  url = urlunsplit((pt.scheme, pt.netloc, pt.path, qs, pt.fragment))
   try:
+    for hash in hashes:
+      url_param = binascii.a2b_hex(hash)
+      qs.append(("info_hash", url_param))
+    qs = urllib.urlencode(qs)
+    pt = parsed_tracker
+    url = urlunsplit((pt.scheme, pt.netloc, pt.path, qs, pt.fragment))
+
     handle = urllib.urlopen(url, timeout=8)
     if handle.getcode() is not 200:
       logging.exception("%s status code returned" % handle.getcode())

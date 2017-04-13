@@ -47,6 +47,7 @@ class Torrentz2Adapter implements AdapterInterface
             return [];
         }
         $results = [];
+        $hashes = [];
         $category = null;
         $now = new DateTime();
 
@@ -62,6 +63,8 @@ class Torrentz2Adapter implements AdapterInterface
 
                 $crawler = new Crawler((string)$__response->getBody());
                 $items = $crawler->filter('div.results')->filter('dl');
+                
+                
                 foreach ($items as $item) {
                     $itemCrawler = new Crawler($item);
 
@@ -70,9 +73,14 @@ class Torrentz2Adapter implements AdapterInterface
                         $name = $itemCrawler->filter('a')->text();
             /**Hash**/
                         $hash = $itemCrawler->filter('a')->attr('href');
+                        $hash = strtolower($hash);
                         if ($hash) $hash = substr($hash, 1);
                         $magnet = 'magnet:?xt=urn:btih:' . $hash . '&dn=' . $name;
-            /**Size**/
+
+            /**Validate hash **/
+                        if(!(preg_match("/^[a-f0-9]{40}$/",$hash))){continue;}
+
+                        /**Size**/
                         $size = $itemCrawler->filter('dd')->filter('span:nth-child(3)')->text();
                         preg_match("/MB|GB|TB|KB/", $size, $k_size);
                         preg_match("/[0-9]+(\S[0-9]+)?/", $size, $size);
@@ -117,17 +125,20 @@ class Torrentz2Adapter implements AdapterInterface
                         $leechers = (int)str_replace([',', '.'], '', $itemCrawler->filter('dd')->filter('span:nth-child(5)')->text());;
                     } catch (\Exception $e) {}
 
-                    $result = new SearchResult();
-                    $result->setName($name)
-                        ->setCategory($category)
-                        ->setDetailsUrl('https://torrentz2.eu/' . $hash)
-                        ->setSource(TorrentScraperService::TORRENTZ2)
-                        ->setSeeders($seeders)
-                        ->setLeechers($leechers)
-                        ->setSize($size)
-                        ->setMagnetUrl($magnet)
-                        ->setTimestamp($age);
-                    $results[] = $result;
+                    if (1||in_array($hash, $hashes) == false) {
+                        $result = new SearchResult();
+                        $result->setName($name)
+                            ->setCategory($category)
+                            ->setDetailsUrl('https://torrentz2.eu/' . $hash)
+                            ->setSource(TorrentScraperService::TORRENTZ2)
+                            ->setSeeders($seeders)
+                            ->setLeechers($leechers)
+                            ->setSize($size)
+                            ->setMagnetUrl($magnet)
+                            ->setTimestamp($age);
+                        $results[] = $result;
+                        $hashes[] = $hash;
+                    }
                 }
             }
         }
