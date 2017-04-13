@@ -60,6 +60,9 @@ class KickassTorrentsAdapter implements AdapterInterface
                         continue;
                     }
                 }
+                /**Name**/
+                /**Age**/
+
                 try{
                     $name = $itemCrawler->filter('.cellMainLink')->text();
                     $age =$itemCrawler->filter('td.center:nth-child(4)')->text();
@@ -76,6 +79,16 @@ class KickassTorrentsAdapter implements AdapterInterface
                 } catch (\Exception $e) {
                     $date = $now;
                 }
+
+                /**Verified**/
+                try {
+                    $verify = $itemCrawler->filter('div.iaconbox')->filter('a.icon16')->attr('title');
+                    if ($verify != 'Verified Torrent'){continue;}
+                } catch (\Exception $e) {
+                    continue;
+                }
+
+                /**Magnet**/
                 try {
                     $input = $itemCrawler->filter('div.none')->attr('data-sc-params');
                     preg_match("/'magnet': '(.{0,})'/", $input, $output);
@@ -114,6 +127,8 @@ class KickassTorrentsAdapter implements AdapterInterface
                 } catch (\Exception $e) {
                     continue;
                 }
+
+                /**Result**/
                 $result = new SearchResult();
                 $result->setName($name)
                     ->setCategory($category)
@@ -128,6 +143,7 @@ class KickassTorrentsAdapter implements AdapterInterface
                 $results[] = $result;
             }
         }
+
         echo "\n KA - completed. ".count($results)." crawled\n";
         return $results;
     }
