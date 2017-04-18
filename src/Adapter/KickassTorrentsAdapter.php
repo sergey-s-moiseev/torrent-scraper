@@ -99,7 +99,7 @@ class KickassTorrentsAdapter implements AdapterInterface
 
                 /**Validate hash **/
                 preg_match("/urn:btih:(.{40}).*/",$magnet,$out);
-                $hash = strtolower($out[1]);
+                if (isset($out[1])) $hash = strtolower($out[1]);
                 if(!(preg_match("/^[a-f0-9]{40}$/",$hash))){continue;}
 
                 try {

@@ -77,7 +77,7 @@ class ThePirateBayAdapter implements AdapterInterface
 
             /**Validate hash **/
             preg_match("/urn:btih:(.{40}).*/",$magnet,$out);
-            $hash = strtolower($out[1]);
+            if (isset($out[1])) $hash = strtolower($out[1]);
             if(!(preg_match("/^[a-f0-9]{40}$/",$hash))){continue;}
 
 
@@ -104,8 +104,9 @@ class ThePirateBayAdapter implements AdapterInterface
                 };
 
                 /** Year */
-                $year = (preg_match("/(\d{4}),[^\.]/", $desc, $year)) ? $year[1] : $now->format('Y');
-
+                try {
+                    $year = (preg_match("/(\d{4}),[^\.]/", $desc, $year)) ? $year[1] : $now->format('Y');
+                } catch (\Exception $e){}
                 /** DateTime object */
                 $date_time_str = $month_day . '-' . $year . ' ' . $time_str[0];
                 $date = \DateTime::createFromFormat('m-j-Y H:i', $date_time_str);
