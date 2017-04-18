@@ -125,7 +125,7 @@ class Torrentz2Adapter implements AdapterInterface
                         $leechers = (int)str_replace([',', '.'], '', $itemCrawler->filter('dd')->filter('span:nth-child(5)')->text());;
                     } catch (\Exception $e) {}
 
-                    if (1||in_array($hash, $hashes) == false) {
+                    if (in_array($hash, $hashes) == false) {
                         $result = new SearchResult();
                         $result->setName($name)
                             ->setCategory($category)
