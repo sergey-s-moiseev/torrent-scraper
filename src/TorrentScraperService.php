@@ -17,7 +17,6 @@ class TorrentScraperService
     const THEPIRATEBAY = 'thePirateBay';
     const TORRENTZ2 = 'torrentz2';
     const EXTRATORRENT = 'extratorrent';
-
     /**
      * @param array $adapters
      * @param array $options

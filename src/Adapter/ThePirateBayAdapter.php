@@ -167,7 +167,7 @@ class ThePirateBayAdapter implements AdapterInterface
             $result->setSize($size);
             $results[] = $result;
         }
-        echo "\n TPB - completed. ".count($results)." trusted crawled \n";
+        echo "\n TPB - completed. ".count($results)." crawled \n";
         return $results;
     }
 }
