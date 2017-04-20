@@ -32,8 +32,8 @@ class ExtratorrentAdapter implements AdapterInterface
         $replace = ["\[","\]","\\","\/","\^","\$","\.","\|","\?","\*","\+","\(","\)","\{","\}"];
         try {
             if (!empty($query)) {
-                $response[0] = [$this->httpClient->get('http://extratorrent.cc/search/?search=' . urlencode($query) . '/&s_cat=&pp=&srt=added&order=desc/')];
-                $response[1] = [$this->httpClient->get('http://extratorrent.cc/search/?search=' . urlencode($query) . '/&s_cat=&pp=&srt=seeds&order=desc/')];
+                $response[0] = [$this->httpClient->get('http://extratorrent.cc/search/?search=' . urlencode($query) . '&s_cat=&pp=&srt=added&order=desc/')];
+                $response[1] = [$this->httpClient->get('http://extratorrent.cc/search/?search=' . urlencode($query) . '&s_cat=&pp=&srt=seeds&order=desc/')];
             } else {
                 $response[0]['Movies'] = $this->httpClient->get('http://extratorrent.cc/category/4/Movies+Torrents.html?srt=added&order=desc');
                 $response[0]['TV'] = $this->httpClient->get('http://extratorrent.cc/category/8/TV+Torrents.html?srt=added&order=desc');
