@@ -34,7 +34,6 @@ class ThePirateBayAdapter implements AdapterInterface
      */
     public function search($query='')
     {
-        $query = 'walking';
         try {
             if ($query){
                 $response = $this->httpClient->get('https://thepiratebay.org/search/' . urlencode($query) . '/0/7/0');
