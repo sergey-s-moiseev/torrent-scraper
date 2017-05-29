@@ -144,13 +144,24 @@ class EzTvAdapter implements AdapterInterface
                 $det_url = 'https://eztv.ag';
             }
 
+
+            /**Peers**/
+            $peers = 0;
+            try {
+                $response = $this->httpClient->get($det_url);
+                $crawler = new Crawler((string) $response->getBody());
+                $peers = $crawler->filter('span.stat_green')->text();
+            } catch (\Exception $e) {
+            }
+
+
 //            $rat_url = 'https:s//eztv.ag'. $itemCrawler->filter('td')->eq(0)->children()->attr('href');
 //            $result->setRating($this->getRating($rat_url));
             $result->setCategory('Tv Show');
             $result->setName($name);
             $result->setDetailsUrl($det_url);
             $result->setSeeders((int) $seeds);
-            $result->setLeechers(0);
+            $result->setLeechers($peers);
             $result->setTimestamp($date->getTimestamp());
 //            $result->setLeechers($this->getPeers($det_url));
             $result->setSource(TorrentScraperService::EZTV);
