@@ -66,6 +66,7 @@ class EzTvAdapter implements AdapterInterface
                 continue;
             }
             /**Validate hash **/
+            if (empty ($magnet_url)) {continue;}
             preg_match("/urn:btih:(.{40}).*/",$magnet_url,$out);
             if (isset($out[1])) $hash = strtolower($out[1]);
             if(!(preg_match("/^[a-f0-9]{40}$/",$hash))){continue;}
