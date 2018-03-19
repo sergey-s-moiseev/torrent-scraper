@@ -13,7 +13,6 @@ use DateTime;
 use DateInterval;
 use Torrent;
 
-use Transmission\Transmission;
 
 
 class ThePirateBayAdapter implements AdapterInterface
