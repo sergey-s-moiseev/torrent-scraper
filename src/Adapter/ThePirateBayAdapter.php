@@ -39,8 +39,10 @@ class ThePirateBayAdapter implements AdapterInterface
       } else {
         // $response = $this->httpClient->get('https://thepiratebay.se/recent');
         $response[] = $this->httpClient->get('https://thepiratebay.org/top/all');
-        $response[] = $this->httpClient->get('https://thepiratebay.org/top/48h201');
-        $response[] = $this->httpClient->get('https://thepiratebay.org/top/48h400');
+        $response[] = $this->httpClient->get('https://thepiratebay.org/top/48h201');  //video
+        $response[] = $this->httpClient->get('https://thepiratebay.org/top/48h400'); //games
+        $response[] = $this->httpClient->get('https://thepiratebay.org/top/48h300'); //soft
+        $response[] = $this->httpClient->get('https://thepiratebay.org/top/48hall'); //
       }
     } catch (\Exception $e) {
       return [];
