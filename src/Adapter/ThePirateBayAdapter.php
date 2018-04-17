@@ -47,6 +47,7 @@ class ThePirateBayAdapter implements AdapterInterface
         $response[] = $this->httpClient->get('https://thepiratebay.org/top/48h300'); //soft
         $response[] = $this->httpClient->get('https://thepiratebay.org/top/48h301'); //soft Windows
         $response[] = $this->httpClient->get('https://thepiratebay.org/top/48hall'); //
+        $response[] = $this->httpClient->get('https://thepiratebay.org/top/48h600'); // eBooks
       }
     } catch (\Exception $e) {
       return [];
