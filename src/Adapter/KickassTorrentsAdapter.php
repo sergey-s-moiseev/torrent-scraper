@@ -15,7 +15,7 @@ class KickassTorrentsAdapter implements AdapterInterface
     use HttpClientAware;
 
     /**
-     * @param array $options
+     * {@inheritDoc}
      */
     public function __construct(array $options = [])
     {
@@ -23,8 +23,23 @@ class KickassTorrentsAdapter implements AdapterInterface
     }
 
     /**
-     * @param string $query
-     * @return SearchResult[]
+     * {@inheritDoc}
+     */
+    public function getLabel()
+    {
+        return 'KickAss Torrents';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getUrl()
+    {
+        return 'https://kickass2.nz/';
+    }
+
+    /**
+     * {@inheritDoc}
      */
     public function search($query='')
     {

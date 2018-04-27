@@ -31,4 +31,18 @@ interface AdapterInterface
      * @param string $query
      */
     public function search($query);
+
+    /**
+     * Get text label of the scraper
+     * 
+     * @return string
+     */
+    public function getLabel();
+
+    /**
+     * Get Url of scraper's site
+     * 
+     * @return string
+     */
+    public function getUrl();
 }

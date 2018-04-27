@@ -23,16 +23,17 @@ class TorrentScraperService
      */
     public function __construct(array $adapters = [], $options = [])
     {
-        foreach ($adapters as $adapter) {
+        foreach ($adapters as $adapterName => $adapter) {
             $adapterName = __NAMESPACE__ . '\\Adapter\\' . ucfirst($adapter) . 'Adapter';
-            $this->addAdapter(new $adapterName($options));
+            $this->addAdapter($adapterName, new $adapterName($options));
         }
     }
 
     /**
+     * @param string $adapterName
      * @param AdapterInterface $adapter
      */
-    public function addAdapter(AdapterInterface $adapter)
+    public function addAdapter($adapterName, AdapterInterface $adapter)
     {
         if (!$adapter->getHttpClient())
         {
@@ -55,7 +56,7 @@ class TorrentScraperService
             ]));
         }
 
-        $this->adapters[] = $adapter;
+        $this->adapters[$adapterName] = $adapter;
     }
 
     /**
@@ -64,6 +65,43 @@ class TorrentScraperService
     public function getAdapters()
     {
         return $this->adapters;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getAdapterLabels()
+    {
+        return array_map(
+            function(AdapterInterface $adapter){
+                return $adapter->getLabel();
+            },
+            $this->adapters
+        );
+    }
+
+    /**
+     * @param string $adapterName
+     * @return string
+     */
+    public function getAdapterLabel($adapterName)
+    {
+        if(!array_key_exists($adapterName, $this->adapters)) {
+            return null;
+        }
+        return $this->adapters[$adapterName]->getLabel();
+    }
+
+    /**
+     * @param string $adapterName
+     * @return string
+     */
+    public function getAdapterUrl($adapterName)
+    {
+        if(!array_key_exists($adapterName, $this->adapters)) {
+            return null;
+        }
+        return $this->adapters[$adapterName]->getUrl();
     }
 
     /**

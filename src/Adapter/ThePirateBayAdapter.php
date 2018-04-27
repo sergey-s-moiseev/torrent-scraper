@@ -20,7 +20,7 @@ class ThePirateBayAdapter implements AdapterInterface
   use HttpClientAware;
 
   /**
-   * @param array $options
+   * {@inheritDoc}
    */
   public function __construct(array $options = [])
   {
@@ -28,8 +28,23 @@ class ThePirateBayAdapter implements AdapterInterface
   }
 
   /**
-   * @param string $query
-   * @return SearchResult[]
+   * {@inheritDoc}
+   */
+  public function getLabel()
+  {
+    return 'The Pirate Bay';
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function getUrl()
+  {
+    return 'https://thepiratebay.se/';
+  }
+
+  /**
+   * {@inheritDoc}
    */
   public function search($query='')
   {

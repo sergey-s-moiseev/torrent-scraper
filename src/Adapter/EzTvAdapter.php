@@ -20,7 +20,7 @@ class EzTvAdapter implements AdapterInterface
     protected $options;
 
     /**
-     * @param $options array
+     * {@inheritDoc}
      */
     public function __construct(array $options = [])
     {
@@ -30,8 +30,23 @@ class EzTvAdapter implements AdapterInterface
     }
 
     /**
-     * @param string $query
-     * @return SearchResult[]
+     * {@inheritDoc}
+     */
+    public function getLabel()
+    {
+        return 'EzTV';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getUrl()
+    {
+        return 'https://eztv.ag/';
+    }
+
+    /**
+     * {@inheritDoc}
      */
     public function search($query='')
     {

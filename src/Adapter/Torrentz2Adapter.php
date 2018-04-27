@@ -17,21 +17,61 @@ class Torrentz2Adapter implements AdapterInterface
   use HttpClientAware;
 
   /**
-   * @param array $options
+   * @var array
+   */
+  protected $options;
+
+  /**
+   * {@inheritDoc}
    */
   public function __construct(array $options = [])
   {
-
+    $this->options = array_merge(
+      [
+        'node_path' => null,
+        'node_modules_path' => null
+      ],
+      array_filter(
+        $options,
+        function($key){
+          return in_array($key, ['node_path', 'node_modules_path']);
+        },
+        ARRAY_FILTER_USE_KEY
+      )
+    );
   }
 
   /**
-   * @param string $query
-   * @return SearchResult[]
+   * {@inheritDoc}
+   */
+  public function getLabel()
+  {
+    return 'Torrentz2';
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function getUrl()
+  {
+    return 'https://torrentz2.eu/';
+  }
+
+  /**
+   * {@inheritDoc}
    */
   public function search($query='')
   {
-    $client = new Client(['cookies' => new FileCookieJar('cookies.txt')]);
-    $client->getConfig('handler')->push(CloudflareMiddleware::create());
+    $client = new Client([
+      // 'debug' => true,
+      'cookies' => new FileCookieJar('cookies.txt'),
+      'headers' => [ // these headers need to avoid recaptcha request
+        'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Encoding' => 'gzip, deflate',
+        'Accept-Language' => 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7'
+      ]
+    ]);
+    $client->getConfig('handler')->push(CloudflareMiddleware::create($this->options['node_path'], $this->options['node_modules_path']));
 
     try {
       if (!empty($query)) {
@@ -59,7 +99,6 @@ class Torrentz2Adapter implements AdapterInterface
         $response[1]['video'] = $client->request('GET', 'https://torrentz2.eu/verifiedP?f=movies%20added%3A3d');
         $response[1]['music'] = $client->request('GET', 'https://torrentz2.eu/verifiedP?f=music%20added%3A30d');
         $response[1]['game'] = $client->request('GET', 'https://torrentz2.eu/verifiedP?f=games%20added%3A40d');
-
       }
     } catch (\Exception $e) {
       return [];
@@ -79,7 +118,7 @@ class Torrentz2Adapter implements AdapterInterface
         $size = 0;
         $age = $now;
 
-        $crawler = new Crawler((string)$__response -> getBody());
+        $crawler = new Crawler((string)$__response ->getBody());
         $items = $crawler->filter('div.results')->filter('dl');
 
         foreach ($items as $item) {
