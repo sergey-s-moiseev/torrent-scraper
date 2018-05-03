@@ -27,7 +27,7 @@ class ExtratorrentAdapter implements AdapterInterface
      */
     public function getLabel()
     {
-        return 'extratorrent';
+        return 'Extratorrent';
     }
 
     /**
