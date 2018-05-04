@@ -19,6 +19,8 @@ class ThePirateBayAdapter implements AdapterInterface
 {
   use HttpClientAware;
 
+  const ADAPTER_NAME = 'thePirateBay';
+
   /**
    * {@inheritDoc}
    */
@@ -205,7 +207,7 @@ class ThePirateBayAdapter implements AdapterInterface
         $result->setCategory($category);
         $result->setSeeders((int)$seeds);
         $result->setLeechers((int)$peers);
-        $result->setSource(TorrentScraperService::THEPIRATEBAY);
+        $result->setSource(self::ADAPTER_NAME);
         $result->setMagnetUrl($magnet);
         $result->setTimestamp($date->getTimestamp());
         $result->setSize($size);

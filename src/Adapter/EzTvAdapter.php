@@ -14,6 +14,8 @@ class EzTvAdapter implements AdapterInterface
 {
     use HttpClientAware;
 
+    const ADAPTER_NAME = 'ezTv';
+
     /**
      * @var array
      */
@@ -180,7 +182,7 @@ class EzTvAdapter implements AdapterInterface
             $result->setLeechers($peers);
             $result->setTimestamp($date->getTimestamp());
 //            $result->setLeechers($this->getPeers($det_url));
-            $result->setSource(TorrentScraperService::EZTV);
+            $result->setSource(self::ADAPTER_NAME);
             $result->setMagnetUrl($magnet_url);
             $result->setSize($size);
             if ($save) $results[] = $result;

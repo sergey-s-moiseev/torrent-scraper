@@ -8,7 +8,10 @@ This library provides an abstraction to search for torrent files accross some to
 ```php
 <?php
 
-$scraperService = new \SergeySMoiseev\TorrentScraper\TorrentScraperService([TorrentScraperService::EZTV, TorrentScraperService::KICKASS]);
+$scraperService = new \SergeySMoiseev\TorrentScraper\TorrentScraperService([
+    \SergeySMoiseev\TorrentScraper\Adapter\EzTvAdapter::ADAPTER_NAME,
+    \SergeySMoiseev\TorrentScraper\Adapter\KickassTorrentsAdapter::ADAPTER_NAME
+]);
 $results = $scraperService->search('query');
 
 foreach ($results as $result) {

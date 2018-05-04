@@ -16,6 +16,8 @@ class Torrentz2Adapter implements AdapterInterface
 {
   use HttpClientAware;
 
+  const ADAPTER_NAME = 'torrentz2';
+
   /**
    * @var array
    */
@@ -186,7 +188,7 @@ class Torrentz2Adapter implements AdapterInterface
             $result->setName($name)
               ->setCategory($category)
               ->setDetailsUrl('https://torrentz2.eu/' . $hash)
-              ->setSource(TorrentScraperService::TORRENTZ2)
+              ->setSource(self::ADAPTER_NAME)
               ->setSeeders($seeders)
               ->setLeechers($leechers)
               ->setSize($size)

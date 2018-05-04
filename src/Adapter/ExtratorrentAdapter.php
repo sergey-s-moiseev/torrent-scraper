@@ -14,6 +14,8 @@ class ExtratorrentAdapter implements AdapterInterface
 {
     use HttpClientAware;
 
+    const ADAPTER_NAME = 'extratorrent';
+
     /**
      * {@inheritDoc}
      */
@@ -176,7 +178,7 @@ class ExtratorrentAdapter implements AdapterInterface
                         $result->setName($name)
                             ->setCategory($category)
                             ->setDetailsUrl('http://extratorrent.cc/' . $link)
-                            ->setSource(TorrentScraperService::EXTRATORRENT)
+                            ->setSource(self::ADAPTER_NAME)
                             ->setSeeders($seeders)
                             ->setLeechers($leechers)
                             ->setSize($size)

@@ -14,6 +14,8 @@ class KickassTorrentsAdapter implements AdapterInterface
 {
     use HttpClientAware;
 
+    const ADAPTER_NAME = 'kickassTorrents';
+
     /**
      * {@inheritDoc}
      */
@@ -150,7 +152,7 @@ class KickassTorrentsAdapter implements AdapterInterface
                 $result->setName($name)
                     ->setCategory($category)
                     ->setDetailsUrl('https://kickass2.nz'.$link)
-                    ->setSource(TorrentScraperService::KICKASS)
+                    ->setSource(self::ADAPTER_NAME)
                     ->setSeeders((int)$itemCrawler->filter('td:nth-child(4)')->text())
                     ->setLeechers((int)$itemCrawler->filter('td:nth-child(5)')->text())
                     ->setSize($size)
