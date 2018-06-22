@@ -64,9 +64,11 @@ class Torrentz2Adapter implements AdapterInterface
    */
   public function search($query='')
   {
+    $cookieFile = tmpfile();
+
     $client = new Client([
       // 'debug' => true,
-      'cookies' => new FileCookieJar('cookies.txt'),
+      'cookies' => new FileCookieJar($this->getTmpFilename($cookieFile)),
       'headers' => [ // these headers need to avoid recaptcha request
         'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
         'Accept-Encoding' => 'gzip, deflate',
@@ -75,36 +77,48 @@ class Torrentz2Adapter implements AdapterInterface
     ]);
     $client->getConfig('handler')->push(CloudflareMiddleware::create($this->options['node_path'], $this->options['node_modules_path']));
 
-    try {
-      if (!empty($query)) {
-//                $response[0] = [$this->httpClient->get('https://torrentz2.eu/verifiedA?f=' . urlencode($query) . '/')];  //old style befor cloudflare
-//                $response[1] = [$this->httpClient->get('https://torrentz2.eu/verifiedP?f=' . urlencode($query) . '/')];
-        $response[0] = [$client->request('GET', 'https://torrentz2.eu/verifiedA?f=' . urlencode($query) . '/')];
-        $response[1] = [$client->request('GET', 'https://torrentz2.eu/verifiedP?f=' . urlencode($query) . '/')];
-      } else {
-//                $response[0]['video'] = $this->httpClient->get('https://torrentz2.eu/verifiedA?f=movies%20added%3A3d');    //old style befor cloudflare
-//                $response[0]['video tv'] = $this->httpClient->get('https://torrentz2.eu/verifiedA?f=tv%20added%3A9d');
-//                $response[0]['music'] = $this->httpClient->get('https://torrentz2.eu/verifiedA?f=music%20added%3A30d');
-//                $response[0]['game'] = $this->httpClient->get('https://torrentz2.eu/verifiedA?f=games%20added%3A40d');
-//
-//                $response[1]['video tv'] = $this->httpClient->get('https://torrentz2.eu/verifiedP?f=tv%20added%3A9d');
-//                $response[1]['video'] = $this->httpClient->get('https://torrentz2.eu/verifiedP?f=movies%20added%3A3d');
-//                $response[1]['music'] = $this->httpClient->get('https://torrentz2.eu/verifiedP?f=music%20added%3A30d');
-//                $response[1]['game'] = $this->httpClient->get('https://torrentz2.eu/verifiedP?f=games%20added%3A40d');
-//
-        $response[0]['video'] = $client->request('GET', 'https://torrentz2.eu/verifiedA?f=movies%20added%3A3d');
-        $response[0]['video tv'] = $client->request('GET', 'https://torrentz2.eu/verifiedA?f=tv%20added%3A9d');
-        $response[0]['music'] = $client->request('GET', 'https://torrentz2.eu/verifiedA?f=music%20added%3A30d');
-        $response[0]['game'] = $client->request('GET', 'https://torrentz2.eu/verifiedA?f=games%20added%3A40d');
+    $urls = empty($query) ? 
+      [
+        [
+          'video' => 'https://torrentz2.eu/verifiedA?f=movies%20added%3A3d',
+          'video tv' => 'https://torrentz2.eu/verifiedA?f=tv%20added%3A9d',
+          'music' => 'https://torrentz2.eu/verifiedA?f=music%20added%3A30d',
+          'game' => 'https://torrentz2.eu/verifiedA?f=games%20added%3A40d'
+        ],
+        [
+          'video' => 'https://torrentz2.eu/verifiedP?f=movies%20added%3A3d',
+          'video tv' => 'https://torrentz2.eu/verifiedP?f=tv%20added%3A9d',
+          'music' => 'https://torrentz2.eu/verifiedP?f=music%20added%3A30d',
+          'game' => 'https://torrentz2.eu/verifiedP?f=games%20added%3A40d'
+        ]
+      ] : 
+      [
+        [sprintf('https://torrentz2.eu/verifiedA?f=%s/', urlencode($query))],
+        [sprintf('https://torrentz2.eu/verifiedP?f=%s/', urlencode($query))]
+      ]
+    ;
 
-        $response[1]['video tv'] = $client->request('GET', 'https://torrentz2.eu/verifiedP?f=tv%20added%3A9d');
-        $response[1]['video'] = $client->request('GET', 'https://torrentz2.eu/verifiedP?f=movies%20added%3A3d');
-        $response[1]['music'] = $client->request('GET', 'https://torrentz2.eu/verifiedP?f=music%20added%3A30d');
-        $response[1]['game'] = $client->request('GET', 'https://torrentz2.eu/verifiedP?f=games%20added%3A40d');
-      }
-    } catch (\Exception $e) {
-      return [];
-    }
+    $response = array_map(
+      function($urlSet) use($client)
+      {
+        return array_filter(array_map(
+          function($url) use($client)
+          {
+            try{
+              return $client->request('GET', $url);
+            } catch (\Exception $e) {
+              // var_dump($e->getMessage());
+              return [];
+            }
+          },
+          $urlSet
+        ));
+      }, 
+      $urls
+    );
+
+    fclose($cookieFile);
+
     $results = [];
     $hashes = [];
     $category = null;
@@ -202,5 +216,11 @@ class Torrentz2Adapter implements AdapterInterface
     }
     echo "\n T2 - completed. ".count($results)." crawled\n";
     return $results;
+  }
+
+  private function getTmpFilename($tmp)
+  {
+    $metaData = stream_get_meta_data($tmp);
+    return $metaData["uri"];
   }
 }

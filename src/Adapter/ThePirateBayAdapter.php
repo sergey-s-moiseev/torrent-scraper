@@ -50,25 +50,35 @@ class ThePirateBayAdapter implements AdapterInterface
    */
   public function search($query='')
   {
-    try {
-      if ($query){
-        $response = $this->httpClient->get('https://thepiratebay.org/search/' . urlencode($query) . '/0/7/0');
-      } else {
-        // $response = $this->httpClient->get('https://thepiratebay.se/recent');
-        $response[] = $this->httpClient->get('https://thepiratebay.org/top/all');
-        $response[] = $this->httpClient->get('https://thepiratebay.org/top/48h100');  //Audio
-        $response[] = $this->httpClient->get('https://thepiratebay.org/top/48h101');  //Music
-        $response[] = $this->httpClient->get('https://thepiratebay.org/top/48h200');  //Video
-        $response[] = $this->httpClient->get('https://thepiratebay.org/top/48h201');  //Movies
-        $response[] = $this->httpClient->get('https://thepiratebay.org/top/48h400'); //games
-        $response[] = $this->httpClient->get('https://thepiratebay.org/top/48h300'); //soft
-        $response[] = $this->httpClient->get('https://thepiratebay.org/top/48h301'); //soft Windows
-        $response[] = $this->httpClient->get('https://thepiratebay.org/top/48hall'); //
-        $response[] = $this->httpClient->get('https://thepiratebay.org/top/48h600'); // eBooks
-      }
-    } catch (\Exception $e) {
-      return [];
-    }
+    $urls = empty($query) ?
+      [
+        // 'https://thepiratebay.se/recent',
+        'https://thepiratebay.org/top/all',
+        'https://thepiratebay.org/top/48h100', //Audio
+        'https://thepiratebay.org/top/48h101', //Music
+        'https://thepiratebay.org/top/48h200', //Video
+        'https://thepiratebay.org/top/48h201', //Movies
+        'https://thepiratebay.org/top/48h400', //games
+        'https://thepiratebay.org/top/48h300', //soft
+        'https://thepiratebay.org/top/48h301', //soft Windows
+        'https://thepiratebay.org/top/48hall', //
+        'https://thepiratebay.org/top/48h600'  //eBooks
+      ] :
+      [sprintf('https://thepiratebay.org/search/%s/0/7/0', urlencode($query))]
+    ;
+    $httpClient = $this->httpClient;
+    $response = array_filter(array_map(
+      function($url) use($httpClient)
+      {
+        try{
+          return $httpClient->get($url);
+        } catch (\Exception $e) {
+          // var_dump($e->getMessage());
+          return [];
+        }
+      },
+      $urls
+    ));
     $results = [];
 
     foreach ($response as $_response) {
