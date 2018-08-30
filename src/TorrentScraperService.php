@@ -108,8 +108,10 @@ class TorrentScraperService
         $results = [];
 
         foreach ($this->adapters as $adapter) {
+          if($adapter->getUrl() == "https://yts.am/") {
             $result = $adapter->search($query);
             $results = array_merge($result, $results);
+          }
         }
 
         return $results;
