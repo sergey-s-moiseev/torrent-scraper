@@ -86,7 +86,7 @@ class YTSAdapter implements AdapterInterface
 
     $response = $client->get('https://yts.am/api/v2/list_movies.jsonp?sort_by=seeds&limit='.self::LIMIT.'&page=0&query_term='.$query);
     $data = json_decode($response->getBody()->getContents())->data;
-    $total = 1;//ceil($data->movie_count / 50);
+    $total = ceil($data->movie_count / 50);
     for ($page = 0; $page <= $total; $page++) {
       foreach ($data->movies as $movie) {
         if (property_exists($movie, 'torrents')) {
