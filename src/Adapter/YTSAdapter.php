@@ -105,7 +105,7 @@ class YTSAdapter implements AdapterInterface
                 ->setSource(self::ADAPTER_NAME)
                 ->setSeeders($seeders)
                 ->setLeechers($leechers)
-                ->setSize($size)
+                ->setSize($size / 1024)
                 ->setMagnetUrl($magnet)
                 ->setTimestamp($age);
             $results[] = $result;
