@@ -50,7 +50,7 @@ class YTSAdapter implements AdapterInterface
    */
   public function getLabel()
   {
-    return 'YTS';
+    return 'YTS.AM';
   }
 
   /**
@@ -93,7 +93,7 @@ class YTSAdapter implements AdapterInterface
           foreach ($movie->torrents as $torrent) {
             $seeders = $torrent->seeds;
             $leechers = $torrent->peers;
-            $size = $torrent->size_bytes / 1024;
+            $size = $torrent->size_bytes / 1048576; // size in MegaBytes
             $trackers_str = join('&tr=', $trackers);
             $magnet = "magnet:?xt=urn:btih:{$torrent->hash}&tr={$trackers_str}&dn={$movie->title_long} [{$torrent->quality}] [YTS.AM]&xl={$torrent->size_bytes}&dl={$torrent->size_bytes}&as={$torrent->url}";
             $age = $torrent->date_uploaded_unix;
@@ -105,7 +105,7 @@ class YTSAdapter implements AdapterInterface
                 ->setSource(self::ADAPTER_NAME)
                 ->setSeeders($seeders)
                 ->setLeechers($leechers)
-                ->setSize($size / 1024)
+                ->setSize($size)
                 ->setMagnetUrl($magnet)
                 ->setTimestamp($age);
             $results[] = $result;
