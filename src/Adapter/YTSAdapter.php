@@ -88,28 +88,30 @@ class YTSAdapter implements AdapterInterface
     $data = json_decode($response->getBody()->getContents())->data;
     $total = ceil($data->movie_count / 50);
     for ($page = 0; $page <= $total; $page++) {
-      foreach ($data->movies as $movie) {
-        if (property_exists($movie, 'torrents')) {
-          foreach ($movie->torrents as $torrent) {
-            $seeders = $torrent->seeds;
-            $leechers = $torrent->peers;
-            $size = $torrent->size_bytes / 1048576; // size in MegaBytes
-            $trackers_str = join('&tr=', $trackers);
-            $magnet = "magnet:?xt=urn:btih:{$torrent->hash}&tr={$trackers_str}&dn={$movie->title_long} [{$torrent->quality}] [YTS.AM]&xl={$torrent->size_bytes}&dl={$torrent->size_bytes}&as={$torrent->url}";
-            $age = $torrent->date_uploaded_unix;
+      if (property_exists($data, 'movies')) {
+        foreach ($data->movies as $movie) {
+          if (property_exists($movie, 'torrents')) {
+            foreach ($movie->torrents as $torrent) {
+              $seeders = $torrent->seeds;
+              $leechers = $torrent->peers;
+              $size = $torrent->size_bytes / 1048576; // size in MegaBytes
+              $trackers_str = join('&tr=', $trackers);
+              $magnet = "magnet:?xt=urn:btih:{$torrent->hash}&tr={$trackers_str}&dn={$movie->title_long} [{$torrent->quality}] [YTS.AM]&xl={$torrent->size_bytes}&dl={$torrent->size_bytes}&as={$torrent->url}";
+              $age = $torrent->date_uploaded_unix;
 
-            $result = new SearchResult();
-            $result->setName("{$movie->title_long} [{$torrent->quality}]")
-                ->setCategory('Movies')
-                ->setDetailsUrl($movie->url)
-                ->setSource(self::ADAPTER_NAME)
-                ->setSeeders($seeders)
-                ->setLeechers($leechers)
-                ->setSize($size)
-                ->setMagnetUrl($magnet)
-                ->setTimestamp($age);
-            $results[] = $result;
-            $hashes[] = $torrent->hash;
+              $result = new SearchResult();
+              $result->setName("{$movie->title_long} [{$torrent->quality}]")
+                  ->setCategory('Movies')
+                  ->setDetailsUrl($movie->url)
+                  ->setSource(self::ADAPTER_NAME)
+                  ->setSeeders($seeders)
+                  ->setLeechers($leechers)
+                  ->setSize($size)
+                  ->setMagnetUrl($magnet)
+                  ->setTimestamp($age);
+              $results[] = $result;
+              $hashes[] = $torrent->hash;
+            }
           }
         }
       }
@@ -118,7 +120,6 @@ class YTSAdapter implements AdapterInterface
       $data = json_decode($response->getBody()->getContents())->data;
     }
     echo "\n YTS - completed. ".count($results)." crawled\n";
-    return $results;
     return $results;
   }
 
