@@ -9,6 +9,7 @@ use SergeySMoiseev\TorrentScraper\TorrentScraperService;
 use Symfony\Component\DomCrawler\Crawler;
 use DateTime;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\TransferException;
 use Tuna\CloudflareMiddleware;
 use GuzzleHttp\Cookie\FileCookieJar;
 
@@ -66,6 +67,7 @@ class YTSAdapter implements AdapterInterface
    */
   public function search($query='')
   {
+    $results = [];
     $trackers = ['udp://glotorrents.pw:6969/announce',
         'udp://tracker.opentrackr.org:1337/announce',
         'udp://torrent.gresille.org:80/announce',
@@ -84,10 +86,10 @@ class YTSAdapter implements AdapterInterface
     ]);
     $client->getConfig('handler')->push(CloudflareMiddleware::create($this->options['node_path'], $this->options['node_modules_path']));
 
-    $response = $client->get('https://yts.am/api/v2/list_movies.jsonp?sort_by=seeds&limit='.self::LIMIT.'&page=0&query_term='.$query);
-    $data = json_decode($response->getBody()->getContents())->data;
+    $data = $this->getMovies($client, 0, $query);
+    if(null === $data) return $results;
     $total = ceil($data->movie_count / 50);
-    for ($page = 0; $page <= $total; $page++) {
+    for ($page = 1; $page <= $total; $page++) {
       if (property_exists($data, 'movies')) {
         foreach ($data->movies as $movie) {
           if (property_exists($movie, 'torrents')) {
@@ -116,8 +118,8 @@ class YTSAdapter implements AdapterInterface
         }
       }
 
-      $response = $client->get('https://yts.am/api/v2/list_movies.jsonp?sort_by=seeds&limit='.self::LIMIT.'&page=' . $page . '&query_term=' . $query);
-      $data = json_decode($response->getBody()->getContents())->data;
+      $data = $this->getMovies($client, $page, $query);
+      if(null === $data) break;
     }
     echo "\n YTS - completed. ".count($results)." crawled\n";
     return $results;
@@ -127,5 +129,17 @@ class YTSAdapter implements AdapterInterface
   {
     $metaData = stream_get_meta_data($tmp);
     return $metaData["uri"];
+  }
+
+  private function getMovies(Client $client, $page, $query)
+  {
+    $uel = 'https://yts.am/api/v2/list_movies.jsonp?sort_by=seeds&limit=' . self::LIMIT . '&page=' . $page . '&query_term=' . $query;
+    for($i = 0; $i < 5; $i++) {
+      try {
+        $response = $client->get($url);
+        return json_decode($response->getBody()->getContents())->data;
+      } catch (TransferException $e) {}
+    }
+    return null;
   }
 }
