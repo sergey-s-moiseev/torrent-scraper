@@ -133,7 +133,7 @@ class YTSAdapter implements AdapterInterface
 
   private function getMovies(Client $client, $page, $query)
   {
-    $uel = 'https://yts.am/api/v2/list_movies.jsonp?sort_by=seeds&limit=' . self::LIMIT . '&page=' . $page . '&query_term=' . $query;
+    $url = 'https://yts.am/api/v2/list_movies.jsonp?sort_by=seeds&limit=' . self::LIMIT . '&page=' . $page . '&query_term=' . $query;
     for($i = 0; $i < 5; $i++) {
       try {
         $response = $client->get($url);
