@@ -4,6 +4,7 @@ namespace SergeySMoiseev\TorrentScraper\Adapter;
 
 use SergeySMoiseev\TorrentScraper\AdapterInterface;
 use SergeySMoiseev\TorrentScraper\HttpClientAware;
+use SergeySMoiseev\TorrentScraper\LoggerAware;
 use SergeySMoiseev\TorrentScraper\Entity\SearchResult;
 use SergeySMoiseev\TorrentScraper\TorrentScraperService;
 use Symfony\Component\DomCrawler\Crawler;
@@ -16,6 +17,7 @@ use GuzzleHttp\Cookie\FileCookieJar;
 class YTSAdapter implements AdapterInterface
 {
   use HttpClientAware;
+  use LoggerAware;
 
   const ADAPTER_NAME = 'yts';
   const LIMIT = 50;
@@ -138,7 +140,9 @@ class YTSAdapter implements AdapterInterface
       try {
         $response = $client->get($url);
         return json_decode($response->getBody()->getContents())->data;
-      } catch (TransferException $e) {}
+      } catch (TransferException $e) {
+        $this->log(\Psr\Log\LogLevel::ERROR, $e->getMessage());
+      }
     }
     return null;
   }

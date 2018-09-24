@@ -5,6 +5,7 @@ namespace SergeySMoiseev\TorrentScraper\Adapter;
 use GuzzleHttp\Exception\ClientException;
 use SergeySMoiseev\TorrentScraper\AdapterInterface;
 use SergeySMoiseev\TorrentScraper\HttpClientAware;
+use SergeySMoiseev\TorrentScraper\LoggerAware;
 use SergeySMoiseev\TorrentScraper\Entity\SearchResult;
 use SergeySMoiseev\TorrentScraper\TorrentScraperService;
 use Symfony\Component\DomCrawler\Crawler;
@@ -13,6 +14,7 @@ use DateTime;
 class EzTvAdapter implements AdapterInterface
 {
     use HttpClientAware;
+    use LoggerAware;
 
     const ADAPTER_NAME = 'ezTv';
 
@@ -55,6 +57,7 @@ class EzTvAdapter implements AdapterInterface
         try {
             $response = $this->httpClient->get('https://eztv.ag/search/' . $this->transformSearchString($query));
         } catch (\Exception $e) {
+            $this->log(\Psr\Log\LogLevel::ERROR, $e->getMessage());
             return [];
         }
 
@@ -120,16 +123,16 @@ class EzTvAdapter implements AdapterInterface
                 $age = iconv('cp1251','UTF-8',$age);
                 $_age = [];
                 $minus = ' ';
-                if(preg_match("/([0-9]{1,2})m\s([1-9]{1,2})s/", $age, $output)) {
-                    $_age = preg_replace("/([0-9]{1,2})m\s([1-9]{1,2})s/", "$1minutes $2seconds", $age);
+                if(preg_match("/([0-9]{1,2})m\s([0-9]{1,2})s/", $age, $output)) {
+                    $_age = preg_replace("/([0-9]{1,2})m\s([0-9]{1,2})s/", "$1minutes $2seconds", $age);
                     $minus = ' - ';
                 }
-                if(preg_match("/([0-9]{1,2})h\s([1-9]{1,2})m/", $age, $output)) {
-                    $_age = preg_replace("/([0-9]{1,2})h\s([1-9]{1,2})m/", "$1hours $2minutes", $age);
+                if(preg_match("/([0-9]{1,2})h\s([0-9]{1,2})m/", $age, $output)) {
+                    $_age = preg_replace("/([0-9]{1,2})h\s([0-9]{1,2})m/", "$1hours $2minutes", $age);
                     $minus = ' - ';
                 }
-                if(preg_match("/([0-9]{1,2})d\s([1-9]{1,2})h/", $age, $output)) {
-                    $_age = preg_replace("/([0-9]{1,2})d\s([1-9]{1,2})h/", "$1days $2hours", $age);
+                if(preg_match("/([0-9]{1,2})d\s([0-9]{1,2})h/", $age, $output)) {
+                    $_age = preg_replace("/([0-9]{1,2})d\s([0-9]{1,2})h/", "$1days $2hours", $age);
                     $minus = ' - ';
                 }
 

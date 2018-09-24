@@ -4,6 +4,7 @@ namespace SergeySMoiseev\TorrentScraper\Adapter;
 
 use SergeySMoiseev\TorrentScraper\AdapterInterface;
 use SergeySMoiseev\TorrentScraper\HttpClientAware;
+use SergeySMoiseev\TorrentScraper\LoggerAware;
 use SergeySMoiseev\TorrentScraper\Entity\SearchResult;
 use SergeySMoiseev\TorrentScraper\TorrentScraperService;
 use Symfony\Component\DomCrawler\Crawler;
@@ -13,6 +14,7 @@ use DateTime;
 class ExtratorrentAdapter implements AdapterInterface
 {
     use HttpClientAware;
+    use LoggerAware;
 
     const ADAPTER_NAME = 'extratorrent';
 
@@ -69,6 +71,7 @@ class ExtratorrentAdapter implements AdapterInterface
                 $response[1]['Anime'] = $this->httpClient->get('http://extratorrent.cc/category/1/Anime+Torrents.html?srt=seeds&order=');
             }
         } catch (\Exception $e) {
+            $this->log(\Psr\Log\LogLevel::ERROR, $e->getMessage());
             return [];
         }
         $results = [];

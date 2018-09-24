@@ -4,6 +4,7 @@ namespace SergeySMoiseev\TorrentScraper\Adapter;
 
 use SergeySMoiseev\TorrentScraper\AdapterInterface;
 use SergeySMoiseev\TorrentScraper\HttpClientAware;
+use SergeySMoiseev\TorrentScraper\LoggerAware;
 use SergeySMoiseev\TorrentScraper\Entity\SearchResult;
 use SergeySMoiseev\TorrentScraper\TorrentScraperService;
 use Symfony\Component\DomCrawler\Crawler;
@@ -15,6 +16,7 @@ use GuzzleHttp\Cookie\FileCookieJar;
 class Torrentz2Adapter implements AdapterInterface
 {
   use HttpClientAware;
+  use LoggerAware;
 
   const ADAPTER_NAME = 'torrentz2';
 
@@ -107,6 +109,7 @@ class Torrentz2Adapter implements AdapterInterface
             try{
               return $client->request('GET', $url);
             } catch (\Exception $e) {
+              $this->log(\Psr\Log\LogLevel::ERROR, $e->getMessage());
               // var_dump($e->getMessage());
               return [];
             }

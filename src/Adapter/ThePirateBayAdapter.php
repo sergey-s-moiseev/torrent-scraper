@@ -5,6 +5,7 @@ namespace SergeySMoiseev\TorrentScraper\Adapter;
 use GuzzleHttp\Exception\ClientException;
 use SergeySMoiseev\TorrentScraper\AdapterInterface;
 use SergeySMoiseev\TorrentScraper\HttpClientAware;
+use SergeySMoiseev\TorrentScraper\LoggerAware;
 use SergeySMoiseev\TorrentScraper\Entity\SearchResult;
 use SergeySMoiseev\TorrentScraper\TorrentScraperService;
 use Symfony\Component\Debug\ExceptionHandler;
@@ -18,6 +19,7 @@ use Torrent;
 class ThePirateBayAdapter implements AdapterInterface
 {
   use HttpClientAware;
+  use LoggerAware;
 
   const ADAPTER_NAME = 'thePirateBay';
 
@@ -73,6 +75,7 @@ class ThePirateBayAdapter implements AdapterInterface
         try{
           return $httpClient->get($url);
         } catch (\Exception $e) {
+          $this->log(\Psr\Log\LogLevel::ERROR, $e->getMessage());
           // var_dump($e->getMessage());
           return [];
         }

@@ -4,6 +4,7 @@ namespace SergeySMoiseev\TorrentScraper\Adapter;
 
 use SergeySMoiseev\TorrentScraper\AdapterInterface;
 use SergeySMoiseev\TorrentScraper\HttpClientAware;
+use SergeySMoiseev\TorrentScraper\LoggerAware;
 use SergeySMoiseev\TorrentScraper\Entity\SearchResult;
 use SergeySMoiseev\TorrentScraper\TorrentScraperService;
 use Symfony\Component\DomCrawler\Crawler;
@@ -13,6 +14,7 @@ use DateTime;
 class KickassTorrentsAdapter implements AdapterInterface
 {
     use HttpClientAware;
+    use LoggerAware;
 
     const ADAPTER_NAME = 'kickassTorrents';
 
@@ -60,6 +62,7 @@ class KickassTorrentsAdapter implements AdapterInterface
                 $response['Other'] = $this->httpClient->get('https://kickass2.nz/other/?field=time_add&sorder=desc');
             }
         } catch (\Exception $e) {
+            $this->log(\Psr\Log\LogLevel::ERROR, $e->getMessage());
             return [];
         }
         $results = [];

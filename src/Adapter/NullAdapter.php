@@ -50,4 +50,18 @@ class NullAdapter implements AdapterInterface
     {
        return [];
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setLogger(\Psr\Log\LoggerInterface $logger)
+    {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function log($level, $message, array $context = array())
+    {
+    }
 }
