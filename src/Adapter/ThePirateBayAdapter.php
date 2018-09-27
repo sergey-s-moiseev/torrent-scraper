@@ -164,13 +164,12 @@ class ThePirateBayAdapter implements AdapterInterface
 
         try {
           /**Size**/
-          preg_match("/MiB|GiB|TiB|KiB/", $desc, $k_size);
-          preg_match("/Size\s(\d{1,}(\.\d{1,})?)/", $desc, $size);
+          preg_match('/(\d+(?:\.\d+)?)\s(MiB|GiB|TiB|KiB)/u', $desc, $size);
 
           $size = (float)$size[1];
-          switch ($k_size[0]) {
+          switch ($size[2]) {
             case 'KiB':
-              $size = $size * 1 / 1024;
+              $size = $size / 1024;
               break;
 
             case 'MiB':
@@ -193,7 +192,7 @@ class ThePirateBayAdapter implements AdapterInterface
         /**Category**/
         try {
           $category = trim($itemCrawler->filter('.vertTh')->text());
-          preg_match('/[a-zA-Z]+/', $category, $parent_cat);
+          preg_match('/\pL+/u', $category, $parent_cat);
           preg_match('/\(((.?)+)\)/', $category, $child_cat);
           $category = implode(":", [$parent_cat[0], $child_cat[1]]);
         } catch (\Exception $e) {
