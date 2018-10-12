@@ -79,7 +79,9 @@ class YTSAdapter implements AdapterInterface
         'udp://p4p.arenabg.ch:1337',
         'udp://tracker.internetwarriors.net:1337'];
 
+    $cookieFile = tmpfile();
     $client = new Client([
+        'cookies' => new FileCookieJar($this->getTmpFilename($cookieFile)),
         'headers' => [ // these headers need to avoid recaptcha request
             'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
             'Accept-Encoding' => 'gzip, deflate',
@@ -123,6 +125,7 @@ class YTSAdapter implements AdapterInterface
       $data = $this->getMovies($client, $page, $query);
       if(null === $data) break;
     }
+    fclose($cookieFile);
     echo "\n YTS - completed. ".count($results)." crawled\n";
     return $results;
   }
