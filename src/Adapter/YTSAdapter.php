@@ -114,7 +114,9 @@ class YTSAdapter implements AdapterInterface
                   ->setLeechers($leechers)
                   ->setSize($size)
                   ->setMagnetUrl($magnet)
-                  ->setTimestamp($age);
+                  ->setTimestamp($age)
+                  ->setIsVerified(true)
+                ;
               $results[] = $result;
               $hashes[] = $torrent->hash;
             }

@@ -186,7 +186,9 @@ class ExtratorrentAdapter implements AdapterInterface
                             ->setLeechers($leechers)
                             ->setSize($size)
                             ->setMagnetUrl($magnet)
-                            ->setTimestamp($date->getTimestamp());
+                            ->setTimestamp($date->getTimestamp())
+                            ->setIsVerified(true)
+                        ;
                         $results[] = $result;
                         $hashes[] = $hash;
                     }

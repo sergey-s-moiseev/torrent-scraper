@@ -58,6 +58,10 @@ class SearchResult
      */
     protected $detailsUrl;
 
+    /**
+     * @var boolean
+     */
+    protected $isVerified;
 
 
     /**
@@ -257,9 +261,22 @@ class SearchResult
 
     }
 
+    /**
+     * @return boolean
+     */
+    public function isVerified()
+    {
+        return $this->isVerified;
+    }
 
-
-
-
+    /**
+     * @param boolean $isVerified
+     * @return self
+     */
+    public function setIsVerified($isVerified)
+    {
+        $this->isVerified = $isVerified;
+        return $this;
+    }
 
 }

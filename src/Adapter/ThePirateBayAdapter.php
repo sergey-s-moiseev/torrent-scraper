@@ -114,9 +114,6 @@ class ThePirateBayAdapter implements AdapterInterface
               $verified = true;
             }
           }
-          if ($verified == false) {
-            continue;
-          }
         } catch (\Exception $e) {
           continue;
         }
@@ -223,6 +220,7 @@ class ThePirateBayAdapter implements AdapterInterface
         $result->setMagnetUrl($magnet);
         $result->setTimestamp($date->getTimestamp());
         $result->setSize($size);
+        $result->setIsVerified($verified);
         $results[] = $result;
       }
     }

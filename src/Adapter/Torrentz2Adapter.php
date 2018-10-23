@@ -82,21 +82,21 @@ class Torrentz2Adapter implements AdapterInterface
     $urls = empty($query) ? 
       [
         [
-          'video' => 'https://torrentz2.eu/verifiedA?f=movies%20added%3A3d',
-          'video tv' => 'https://torrentz2.eu/verifiedA?f=tv%20added%3A9d',
-          'music' => 'https://torrentz2.eu/verifiedA?f=music%20added%3A30d',
-          'game' => 'https://torrentz2.eu/verifiedA?f=games%20added%3A40d'
+          'video' => 'https://torrentz2.eu/searchA?f=movies%20added%3A3d',
+          'video tv' => 'https://torrentz2.eu/searchA?f=tv%20added%3A9d',
+          'music' => 'https://torrentz2.eu/searchA?f=music%20added%3A30d',
+          'game' => 'https://torrentz2.eu/searchA?f=games%20added%3A40d'
         ],
         [
-          'video' => 'https://torrentz2.eu/verifiedP?f=movies%20added%3A3d',
-          'video tv' => 'https://torrentz2.eu/verifiedP?f=tv%20added%3A9d',
-          'music' => 'https://torrentz2.eu/verifiedP?f=music%20added%3A30d',
-          'game' => 'https://torrentz2.eu/verifiedP?f=games%20added%3A40d'
+          'video' => 'https://torrentz2.eu/search?f=movies%20added%3A3d',
+          'video tv' => 'https://torrentz2.eu/search?f=tv%20added%3A9d',
+          'music' => 'https://torrentz2.eu/search?f=music%20added%3A30d',
+          'game' => 'https://torrentz2.eu/search?f=games%20added%3A40d'
         ]
       ] : 
       [
-        [sprintf('https://torrentz2.eu/verifiedA?f=%s/', urlencode($query))],
-        [sprintf('https://torrentz2.eu/verifiedP?f=%s/', urlencode($query))]
+        [sprintf('https://torrentz2.eu/searchA?f=%s/', urlencode($query))],
+        [sprintf('https://torrentz2.eu/search?f=%s/', urlencode($query))]
       ]
     ;
 
@@ -200,6 +200,11 @@ class Torrentz2Adapter implements AdapterInterface
             $leechers = (int)str_replace([',', '.'], '', $itemCrawler->filter('dd')->filter('span:nth-child(5)')->text());;
           } catch (\Exception $e) {}
 
+          /**Verified**/
+          try{
+            $verified = 0 < strlen(preg_replace('/\s/', '', $itemCrawler->filter('dd')->filter('span:nth-child(1)')->text()));
+          } catch (\Exception $e) {}
+
           if (in_array($hash, $hashes) == false) {
             $result = new SearchResult();
             $result->setName($name)
@@ -210,7 +215,9 @@ class Torrentz2Adapter implements AdapterInterface
               ->setLeechers($leechers)
               ->setSize($size)
               ->setMagnetUrl($magnet)
-              ->setTimestamp($age);
+              ->setTimestamp($age)
+              ->setIsVerified($verified)
+            ;
             $results[] = $result;
             $hashes[] = $hash;
           }

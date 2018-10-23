@@ -188,6 +188,7 @@ class EzTvAdapter implements AdapterInterface
             $result->setSource(self::ADAPTER_NAME);
             $result->setMagnetUrl($magnet_url);
             $result->setSize($size);
+            $result->setIsVerified(true);
             if ($save) $results[] = $result;
         }
         echo "\n EZ - completed. ".count($results)." crawled \n";

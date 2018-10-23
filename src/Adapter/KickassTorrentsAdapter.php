@@ -161,7 +161,8 @@ class KickassTorrentsAdapter implements AdapterInterface
                     ->setSize($size)
                     ->setMagnetUrl($magnet)
                     ->setTimestamp($date->getTimestamp())
-                    ;
+                    ->setIsVerified(true)
+                ;
                 $results[] = $result;
 
             }
