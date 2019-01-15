@@ -46,7 +46,7 @@ class EzTvAdapter implements AdapterInterface
      */
     public function getUrl()
     {
-        return 'https://eztv.ag/';
+        return 'https://eztv.io/';
     }
 
     /**
@@ -54,13 +54,10 @@ class EzTvAdapter implements AdapterInterface
      */
     public function search($query='')
     {
-        try {
-            $response = $this->httpClient->get('https://eztv.ag/search/' . $this->transformSearchString($query));
-        } catch (\Exception $e) {
-            $this->log(\Psr\Log\LogLevel::ERROR, $e->getMessage());
+        $response = $this->getDataFromHttpClient('https://eztv.io/search/' . $this->transformSearchString($query));
+        if(null === $response) {
             return [];
         }
-
 
         $crawler = new Crawler((string) $response->getBody());
         $items = $crawler->filter('tr.forum_header_border');
@@ -160,23 +157,25 @@ class EzTvAdapter implements AdapterInterface
                 $seeds = str_replace($vowels, "", $seeds);
             } catch (\Exception $e) {$seeds = 0;}
 
-            try {$det_url = 'https://eztv.ag' . $itemCrawler->filter('td')->eq(1)->filter('a.epinfo')->attr('href');
+            try {$det_url = 'https://eztv.io' . $itemCrawler->filter('td')->eq(1)->filter('a.epinfo')->attr('href');
             }catch (\Exception $e) {
-                $det_url = 'https://eztv.ag';
+                $det_url = 'https://eztv.io';
             }
 
 
             /**Peers**/
             $peers = 0;
             try {
-                $response = $this->httpClient->get($det_url);
-                $crawler = new Crawler((string) $response->getBody());
-                $peers = $crawler->filter('span.stat_green')->text();
+                $response = $this->getDataFromHttpClient($det_url);
+                if(null !== $response) {
+                    $crawler = new Crawler((string) $response->getBody());
+                    $peers = $crawler->filter('span.stat_green')->text();
+                }
             } catch (\Exception $e) {
             }
 
 
-//            $rat_url = 'https:s//eztv.ag'. $itemCrawler->filter('td')->eq(0)->children()->attr('href');
+//            $rat_url = 'https:s//eztv.io'. $itemCrawler->filter('td')->eq(0)->children()->attr('href');
 //            $result->setRating($this->getRating($rat_url));
             $result->setCategory('Tv Show');
             $result->setName($name);
@@ -208,9 +207,8 @@ class EzTvAdapter implements AdapterInterface
     }
 
     private function getPeers($url) {
-        try {
-            $response = $this->httpClient->get($url);
-        } catch (ClientException $e) {
+        $response = $this->getDataFromHttpClient($url);
+        if(null === $response) {
             return [];
         }
         $crawler = new Crawler((string) $response->getBody());
@@ -222,9 +220,8 @@ class EzTvAdapter implements AdapterInterface
     }
 
     private function getRating($url) {
-        try {
-            $response = $this->httpClient->get($url);
-        } catch (ClientException $e) {
+        $response = $this->getDataFromHttpClient($url);
+        if(null === $response) {
             return [];
         }
         $crawler = new Crawler((string) $response->getBody());
@@ -232,5 +229,16 @@ class EzTvAdapter implements AdapterInterface
         $item = $item->filter('td.show_info_rating_score');
         $rating = $item->filter('span')->text();
         return (float)$rating;
+    }
+
+    private function getDataFromHttpClient($url) 
+    {
+        for($i = 0; $i < 5; $i++) {
+            try {
+                return $this->httpClient->get($url);
+            } catch(\Exception $e) {
+                $this->log(\Psr\Log\LogLevel::ERROR, $e->getMessage());
+            }
+        }
     }
 }
