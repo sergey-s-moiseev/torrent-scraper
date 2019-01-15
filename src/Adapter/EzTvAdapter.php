@@ -10,6 +10,10 @@ use SergeySMoiseev\TorrentScraper\Entity\SearchResult;
 use SergeySMoiseev\TorrentScraper\TorrentScraperService;
 use Symfony\Component\DomCrawler\Crawler;
 use DateTime;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\TransferException;
+use Tuna\CloudflareMiddleware;
+use GuzzleHttp\Cookie\FileCookieJar;
 
 class EzTvAdapter implements AdapterInterface
 {
@@ -31,6 +35,21 @@ class EzTvAdapter implements AdapterInterface
         $defaults = ['seeders' => 1, 'leechers' => 1];
 
         $this->options = array_merge($defaults, $options);
+        $this->options = array_merge(
+            [
+                'node_path' => null,
+                'node_modules_path' => null,
+                'seeders' => 1,
+                'leechers' => 1
+            ],
+            array_filter(
+                $options,
+                function($key){
+                  return in_array($key, ['node_path', 'node_modules_path', 'seeders', 'leechers']);
+                },
+                ARRAY_FILTER_USE_KEY
+            )
+        );
     }
 
     /**
@@ -54,7 +73,18 @@ class EzTvAdapter implements AdapterInterface
      */
     public function search($query='')
     {
-        $response = $this->getDataFromHttpClient('https://eztv.io/search/' . $this->transformSearchString($query));
+        $cookieFile = tmpfile();
+        $client = new Client([
+            'cookies' => new FileCookieJar($this->getTmpFilename($cookieFile)),
+            'headers' => [ // these headers need to avoid recaptcha request
+                'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+                'Accept-Encoding' => 'gzip, deflate',
+                'Accept-Language' => 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7'
+            ]
+        ]);
+        $client->getConfig('handler')->push(CloudflareMiddleware::create($this->options['node_path'], $this->options['node_modules_path']));
+
+        $response = $this->getDataFromHttpClient($client, 'https://eztv.io/search/' . $this->transformSearchString($query));
         if(null === $response) {
             return [];
         }
@@ -166,7 +196,7 @@ class EzTvAdapter implements AdapterInterface
             /**Peers**/
             $peers = 0;
             try {
-                $response = $this->getDataFromHttpClient($det_url);
+                $response = $this->getDataFromHttpClient($client, $det_url);
                 if(null !== $response) {
                     $crawler = new Crawler((string) $response->getBody());
                     $peers = $crawler->filter('span.stat_green')->text();
@@ -176,20 +206,21 @@ class EzTvAdapter implements AdapterInterface
 
 
 //            $rat_url = 'https:s//eztv.io'. $itemCrawler->filter('td')->eq(0)->children()->attr('href');
-//            $result->setRating($this->getRating($rat_url));
+//            $result->setRating($this->getRating($client, $rat_url));
             $result->setCategory('Tv Show');
             $result->setName($name);
             $result->setDetailsUrl($det_url);
             $result->setSeeders((int) $seeds);
             $result->setLeechers($peers);
             $result->setTimestamp($date->getTimestamp());
-//            $result->setLeechers($this->getPeers($det_url));
+//            $result->setLeechers($this->getPeers($client, $det_url));
             $result->setSource(self::ADAPTER_NAME);
             $result->setMagnetUrl($magnet_url);
             $result->setSize($size);
             $result->setIsVerified(true);
             if ($save) $results[] = $result;
         }
+        fclose($cookieFile);
         echo "\n EZ - completed. ".count($results)." crawled \n";
 
         return $results;
@@ -206,8 +237,8 @@ class EzTvAdapter implements AdapterInterface
         return preg_replace('/[^a-z0-9]/', '-', strtolower($searchString));
     }
 
-    private function getPeers($url) {
-        $response = $this->getDataFromHttpClient($url);
+    private function getPeers(Client $client, $url) {
+        $response = $this->getDataFromHttpClient($client, $url);
         if(null === $response) {
             return [];
         }
@@ -219,8 +250,8 @@ class EzTvAdapter implements AdapterInterface
 
     }
 
-    private function getRating($url) {
-        $response = $this->getDataFromHttpClient($url);
+    private function getRating(Client $client, $url) {
+        $response = $this->getDataFromHttpClient($client, $url);
         if(null === $response) {
             return [];
         }
@@ -231,11 +262,17 @@ class EzTvAdapter implements AdapterInterface
         return (float)$rating;
     }
 
-    private function getDataFromHttpClient($url) 
+    private function getTmpFilename($tmp)
+    {
+      $metaData = stream_get_meta_data($tmp);
+      return $metaData["uri"];
+    }
+
+    private function getDataFromHttpClient(Client $client, $url)
     {
         for($i = 0; $i < 5; $i++) {
             try {
-                return $this->httpClient->get($url);
+                return $client->get($url);
             } catch(\Exception $e) {
                 $this->log(\Psr\Log\LogLevel::ERROR, $e->getMessage());
             }
