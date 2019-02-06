@@ -7,7 +7,7 @@ class ScrapLog:
     import sys
     import logging
 
-    print sys.argv
+    print(sys.argv)
 
     logging.basicConfig(level=logging.DEBUG)
     self.logger = logging.getLogger("scraplog")

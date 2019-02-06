@@ -13,6 +13,11 @@ class TorrentScraperService
     protected $adapters;
 
     /**
+     * @var string
+     */
+    protected $scriptAddress = '127.0.0.1:5000';
+
+    /**
      * @param array $adapters
      * @param array $options
      */
@@ -116,8 +121,31 @@ class TorrentScraperService
         return $results;
     }
 
+    /**
+     * Set script default address
+     * @var string $address
+     * @return self
+     */
+    public function setScriptAddress($address)
+    {
+        $this->scriptAddress = $address;
+        return $this;
+    }
 
-    private function sendToScript($data) {
+    /**
+     * Get script default address
+     * @return string
+     */
+    public function getScriptAddress()
+    {
+        return $this->scriptAddress;
+    }
+
+    private function sendToScript($data, $scriptAddress = null) 
+    {
+        if(null === $scriptAddress) {
+            $scriptAddress = $this->getScriptAddress();
+        }
         try {
             $client = new \GuzzleHttp\Client([
                 'headers' => [
@@ -125,8 +153,10 @@ class TorrentScraperService
                     'timeout' => 5
                 ]
             ]);
-            $response = $client->post('127.0.0.1:5000',
-                ['body' => json_encode($data),
+            $response = $client->post(
+                $scriptAddress,
+                [
+                    'body' => json_encode($data),
                     'timeout'         => 5,
                     'connect_timeout' => 5
                 ]
@@ -156,38 +186,35 @@ class TorrentScraperService
         );
     }
 
-    public function logs($from_date = null, $to_date = null)
+    public function logs($from_date = null, $to_date = null, $scriptAddress = null)
     {
         return $this->sendToScript(
             [
-                'data' => ['interval' => [$from_date, $to_date]],
-                'callback' => null,
-                'private_key' => null
-            ]
+                'data' => ['interval' => [$from_date, $to_date]]
+            ],
+            $scriptAddress
         );
     }
 
 
-    public function ping()
+    public function ping($scriptAddress = null)
     {
         return $this->sendToScript(
             [
-                'data' => 'ping',
-                'callback' => null,
-                'private_key' => null
-            ]
+                'data' => 'ping'
+            ],
+            $scriptAddress
         );
     }
 
 
-    public function stop()
+    public function stop($scriptAddress = null)
     {
         return $this->sendToScript(
             [
-                'data' => 'stop',
-                'callback' => null,
-                'private_key' => null
-            ]
+                'data' => 'stop'
+            ],
+            $scriptAddress
         );
     }
 }
