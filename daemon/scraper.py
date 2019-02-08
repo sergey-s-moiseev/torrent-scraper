@@ -43,8 +43,8 @@ def scrape_udp(parsed_tracker, hashes, info):
     logging.exception("Only 74 hashes can be scraped on a UDP tracker due to UDP limitations")
     return {}
 
-  transaction_id = "\x00\x00\x04\x12\x27\x10\x19\x70";
-  connection_id = "\x00\x00\x04\x17\x27\x10\x19\x80";
+  transaction_id = "\x00\x00\x04\x12\x27\x10\x19\x70"
+  connection_id = "\x00\x00\x04\x17\x27\x10\x19\x80"
   try:
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.settimeout(8)
@@ -74,7 +74,7 @@ def scrape_http(parsed_tracker, hashes, info):
   for hash in hashes:
     url_param = binascii.a2b_hex(hash)
     qs.append(("info_hash", url_param))
-  qs = urllib.urlencode(qs)
+  qs = urllib.parse.urlencode(qs)
   pt = parsed_tracker
   url = urlunsplit((pt.scheme, pt.netloc, pt.path, qs, pt.fragment))
 
