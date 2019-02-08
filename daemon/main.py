@@ -1,4 +1,3 @@
-import scraplog
 import multiprocessing
 import socket
 from http_parser.parser import HttpParser
@@ -34,9 +33,8 @@ def scrap_result(result, url, key, is_ssl = False):
   finally:
     conn.close()
 
-# def scrap(arg):
 def scrap(args):
-  db_path, data, url, key = list(args)
+  data, url, key = list(args)
   import scraper
   import logging
 
@@ -55,15 +53,12 @@ def scrap(args):
 
   trackers = data.get('trackers')
   hashes = data.get('hashes')
-  scrap_log = scraplog.ScrapLog(db_path)
-  scrap_log.start_logging(key, url, hashes)
 
   try:
     _cur = 0
     for tracker in trackers:
       _cur += 1
       _result = scraper.scrape(tracker,hashes, [_cur, len(trackers)])
-      scrap_log.add_row(tracker, _result)
       for _hash, _info in _result.items():
         _seeds = 0
         _peers = 0
@@ -75,11 +70,8 @@ def scrap(args):
         result[_hash] = {'seeds': _seeds + _info.get('seeds'), 'peers': _peers + _info.get('peers')}
   except Exception as e:
     scrap_result(str(e), url, key, is_ssl)
-    scrap_log.add_error(e)
   finally:
     scrap_result(result, url, key, is_ssl)
-    scrap_log.stop_logging()
-    scrap_log.close()
 
 def send_and_close(connection, code = 200, data = {}):
   import json
@@ -101,7 +93,7 @@ def send_and_close(connection, code = 200, data = {}):
   connection.shutdown(socket.SHUT_RDWR)
   connection.close()
 
-def handle(connection, address, pid, queue_obj, db_path):
+def handle(connection, address, pid, queue_obj):
   import logging
   import json
   from queue import Full
@@ -151,12 +143,6 @@ def handle(connection, address, pid, queue_obj, db_path):
     elif data == 'stop':
       send_and_close(connection, 200, {"message": "Shutting down"})
       os.kill(pid, signal.SIGUSR1)
-    elif 'interval' in data:
-      interval = data.get('interval')
-      scrap_log = scraplog.ScrapLog(db_path)
-      logs = scrap_log.get_logs(interval[0],interval[1])
-      scrap_log.close()
-      send_and_close(connection, 200, logs)
     elif 'trackers' in data and 'hashes' in data:
       try:
         queue_obj.put({"data": [data, url, key], "address": address}, False)
@@ -165,9 +151,8 @@ def handle(connection, address, pid, queue_obj, db_path):
         send_and_close(connection, 429, {"message": "Server queue is full. Try another one."})
 
 class IterableQueueWrapper:
-  def __init__(self, queue, db_path):
+  def __init__(self, queue):
     self.queue = queue
-    self.db_path = db_path
 
   def __iter__(self):
     return self
@@ -176,14 +161,14 @@ class IterableQueueWrapper:
     from queue import Empty
     try:
       data = self.queue.get(False)
-      return [self.db_path] + data.get("data")
+      return data.get("data")
     except Empty:
       raise StopIteration
 
 def process_queue(queue_obj, config):
   from queue import Empty
   pool = multiprocessing.Pool(processes = config.get('processes'), maxtasksperchild = 100)
-  wrapped_queue = IterableQueueWrapper(queue_obj, config.get('db_path'))
+  wrapped_queue = IterableQueueWrapper(queue_obj)
 
   while True:
     pool.imap(func=scrap, iterable=wrapped_queue)
@@ -192,8 +177,8 @@ def process_queue(queue_obj, config):
   #   time.sleep(0.5)
   #   try:
   #     data = queue_obj.get(False)
-  #     pool.apply_async(func=scrap, args=[config.get('db_path')] + data.get("data"))
-  #     # multiprocessing.Process(target=scrap, args=[config.get('db_path')] + data.get("data")).start()
+  #     pool.apply_async(func=scrap, args=data.get("data"))
+  #     # multiprocessing.Process(target=scrap, args=data.get("data")).start()
   #   except Empty:
   #     continue
 
@@ -222,7 +207,7 @@ class Server:
         continue
       else:
         self.logger.debug("Got connection")
-        process = multiprocessing.Process(target=handle, args=(connection, address, os.getpid(), self.queue, self.config.get('db_path')))
+        process = multiprocessing.Process(target=handle, args=(connection, address, os.getpid(), self.queue))
         process.start()
 
 class ExitCommand(Exception):
@@ -236,21 +221,16 @@ if __name__ == "__main__":
   import logging
 
   parser = argparse.ArgumentParser(prog='scraper')
-  parser.add_argument('--db', help='Database path')
   parser.add_argument('--host', default='0.0.0.0', help='Host address to bind to')
   parser.add_argument('--port', default='5000', help='Port to bind to')
   parser.add_argument('--processes', default=multiprocessing.cpu_count(), help='Number of scrapper processes')
   parser.add_argument('--queue-limit', default=100, help='Scrapper queue limit')
   args = parser.parse_args()
-  config = {'host': args.host, 'port': int(args.port), 'db_path': args.db, 'processes': int(args.processes), 'queue_limit': int(args.queue_limit)}
+  config = {'host': args.host, 'port': int(args.port), 'processes': int(args.processes), 'queue_limit': int(args.queue_limit)}
 
   logging.basicConfig(level=logging.DEBUG)
   server = Server(config)
   signal.signal(signal.SIGUSR1, signal_handler)
-
-  scrap_log = scraplog.ScrapLog(config.get('db_path'))
-  scrap_log.check_tables()
-  scrap_log.close()
 
   try:
     logging.info("Listening on %s:%d", config.get('host'), config.get('port'))
