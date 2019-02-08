@@ -11,7 +11,7 @@ class ScrapLog:
     self.logger = logging.getLogger("scraplog")
     path = os.path.dirname(os.path.realpath(__file__)) if arg_path is None else arg_path
 
-    self.conn = sqlite3.connect('%s/scraplog.db' % path, timeout=60)
+    self.conn = sqlite3.connect('%s/scraplog.db' % path) #, timeout=60)
     self.conn.execute("PRAGMA journal_mode=WAL") # to share database file between threads
 
   def check_tables(self):

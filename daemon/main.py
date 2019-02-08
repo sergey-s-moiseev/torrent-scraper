@@ -34,7 +34,9 @@ def scrap_result(result, url, key, is_ssl = False):
   finally:
     conn.close()
 
-def scrap(db_path, data, url, key):
+# def scrap(arg):
+def scrap(args):
+  db_path, data, url, key = list(args)
   import scraper
   import logging
 
@@ -53,7 +55,7 @@ def scrap(db_path, data, url, key):
 
   trackers = data.get('trackers')
   hashes = data.get('hashes')
-  scrap_log = scraplog.ScrapLog(config.get('db_path'))
+  scrap_log = scraplog.ScrapLog(db_path)
   scrap_log.start_logging(key, url, hashes)
 
   try:
@@ -162,18 +164,38 @@ def handle(connection, address, pid, queue_obj, db_path):
       except Full:
         send_and_close(connection, 429, {"message": "Server queue is full. Try another one."})
 
+class IterableQueueWrapper:
+  def __init__(self, queue, db_path):
+    self.queue = queue
+    self.db_path = db_path
+
+  def __iter__(self):
+    return self
+
+  def __next__(self):
+    from queue import Empty
+    try:
+      data = self.queue.get(False)
+      return [self.db_path] + data.get("data")
+    except Empty:
+      raise StopIteration
+
 def process_queue(queue_obj, config):
   from queue import Empty
   pool = multiprocessing.Pool(processes = config.get('processes'), maxtasksperchild = 100)
+  wrapped_queue = IterableQueueWrapper(queue_obj, config.get('db_path'))
 
   while True:
+    pool.imap(func=scrap, iterable=wrapped_queue)
     time.sleep(0.5)
-    try:
-      data = queue_obj.get(False)
-      pool.apply_async(func=scrap, args=[config.get('db_path')] + data.get("data"))
-      # multiprocessing.Process(target=scrap, args=[config.get('db_path')] + data.get("data")).start()
-    except Empty:
-      continue
+  # while True:
+  #   time.sleep(0.5)
+  #   try:
+  #     data = queue_obj.get(False)
+  #     pool.apply_async(func=scrap, args=[config.get('db_path')] + data.get("data"))
+  #     # multiprocessing.Process(target=scrap, args=[config.get('db_path')] + data.get("data")).start()
+  #   except Empty:
+  #     continue
 
 class Server:
   def __init__(self, config):

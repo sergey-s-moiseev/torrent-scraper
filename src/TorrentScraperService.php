@@ -146,27 +146,22 @@ class TorrentScraperService
         if(null === $scriptAddress) {
             $scriptAddress = $this->getScriptAddress();
         }
-        try {
-            $client = new \GuzzleHttp\Client([
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                    'timeout' => 5
-                ]
-            ]);
-            $response = $client->post(
-                $scriptAddress,
-                [
-                    'body' => json_encode($data),
-                    'timeout'         => 5,
-                    'connect_timeout' => 5
-                ]
+        $client = new \GuzzleHttp\Client([
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'timeout' => 0.5
+            ]
+        ]);
+        $response = $client->post(
+            $scriptAddress,
+            [
+                'body' => json_encode($data),
+                'timeout'         => 0.5,
+                'connect_timeout' => 0.5
+            ]
 
-            );
-            return $response->getBody()->getContents();
-        } catch(RequestException $e) {
-            $message = $e->getMessage();
-            return $message;
-        }
+        );
+        return $response->getBody()->getContents();
     }
 
     /**
