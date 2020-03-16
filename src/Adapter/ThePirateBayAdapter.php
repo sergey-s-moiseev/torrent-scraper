@@ -44,7 +44,7 @@ class ThePirateBayAdapter implements AdapterInterface
    */
   public function getUrl()
   {
-    return 'https://thepiratebay.se/';
+    return 'https://thepirate-bay.org/';
   }
 
   /**
@@ -55,18 +55,18 @@ class ThePirateBayAdapter implements AdapterInterface
     $urls = empty($query) ?
       [
         // 'https://thepiratebay.se/recent',
-        'https://thepiratebay.org/top/all',
-        'https://thepiratebay.org/top/48h100', //Audio
-        'https://thepiratebay.org/top/48h101', //Music
-        'https://thepiratebay.org/top/48h200', //Video
-        'https://thepiratebay.org/top/48h201', //Movies
-        'https://thepiratebay.org/top/48h400', //games
-        'https://thepiratebay.org/top/48h300', //soft
-        'https://thepiratebay.org/top/48h301', //soft Windows
-        'https://thepiratebay.org/top/48hall', //
-        'https://thepiratebay.org/top/48h600'  //eBooks
+        'https://thepirate-bay.org/top/all',
+        'https://thepirate-bay.org/top/48h100', //Audio
+        'https://thepirate-bay.org/top/48h101', //Music
+        'https://thepirate-bay.org/top/48h200', //Video
+        'https://thepirate-bay.org/top/48h201', //Movies
+        'https://thepirate-bay.org/top/48h400', //games
+        'https://thepirate-bay.org/top/48h300', //soft
+        'https://thepirate-bay.org/top/48h301', //soft Windows
+        'https://thepirate-bay.org/top/48hall', //
+        'https://thepirate-bay.org/top/48h600'  //eBooks
       ] :
-      [sprintf('https://thepiratebay.org/search/%s/0/7/0', urlencode($query))]
+      [sprintf('https://thepirate-bay.org/search/%s/0/7/0', urlencode($query))]
     ;
     $httpClient = $this->httpClient;
     $response = array_filter(array_map(
@@ -82,6 +82,7 @@ class ThePirateBayAdapter implements AdapterInterface
       },
       $urls
     ));
+    var_dump($response);
     $results = [];
 
     foreach ($response as $_response) {
@@ -212,7 +213,7 @@ class ThePirateBayAdapter implements AdapterInterface
         }
 
         $result->setName($name);
-        $result->setDetailsUrl('https://thepiratebay.org' . $link);
+        $result->setDetailsUrl('https://thepirate-bay.org' . $link);
         $result->setCategory($category);
         $result->setSeeders((int)$seeds);
         $result->setLeechers((int)$peers);
@@ -221,6 +222,8 @@ class ThePirateBayAdapter implements AdapterInterface
         $result->setTimestamp($date->getTimestamp());
         $result->setSize($size);
         $result->setIsVerified($verified);
+
+        var_dump($name. ' -> ' . $result->getCategory());
         $results[] = $result;
       }
     }
