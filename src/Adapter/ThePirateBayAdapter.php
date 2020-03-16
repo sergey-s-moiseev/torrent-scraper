@@ -55,18 +55,18 @@ class ThePirateBayAdapter implements AdapterInterface
     $urls = empty($query) ?
       [
         // 'https://thepiratebay.se/recent',
-        'https://thepirate-bay.org/top/all',
-        'https://thepirate-bay.org/top/48h100', //Audio
-        'https://thepirate-bay.org/top/48h101', //Music
-        'https://thepirate-bay.org/top/48h200', //Video
-        'https://thepirate-bay.org/top/48h201', //Movies
-        'https://thepirate-bay.org/top/48h400', //games
-        'https://thepirate-bay.org/top/48h300', //soft
-        'https://thepirate-bay.org/top/48h301', //soft Windows
-        'https://thepirate-bay.org/top/48hall', //
-        'https://thepirate-bay.org/top/48h600'  //eBooks
+        'https://tpb.party/top/all',
+        'https://tpb.party/top/100', //Audio
+        'https://tpb.party/top/101', //Music
+        'https://tpb.party/top/200', //Video
+        'https://tpb.party/top/201', //Movies
+        'https://tpb.party/top/400', //games
+        'https://tpb.party/top/300', //soft
+        'https://tpb.party/top/301', //soft Windows
+        'https://tpb.party/top/48hall', //
+        'https://tpb.party/top/601'  //eBooks
       ] :
-      [sprintf('https://thepirate-bay.org/search/%s/0/7/0', urlencode($query))]
+      [sprintf('https://tpb.party/search/%s/0/7/0', urlencode($query))]
     ;
     $httpClient = $this->httpClient;
     $response = array_filter(array_map(
@@ -82,7 +82,6 @@ class ThePirateBayAdapter implements AdapterInterface
       },
       $urls
     ));
-    var_dump($response);
     $results = [];
 
     foreach ($response as $_response) {
@@ -213,7 +212,7 @@ class ThePirateBayAdapter implements AdapterInterface
         }
 
         $result->setName($name);
-        $result->setDetailsUrl('https://thepirate-bay.org' . $link);
+        $result->setDetailsUrl('https://www.pirate-bay.net' . $link);
         $result->setCategory($category);
         $result->setSeeders((int)$seeds);
         $result->setLeechers((int)$peers);
@@ -227,7 +226,6 @@ class ThePirateBayAdapter implements AdapterInterface
         $results[] = $result;
       }
     }
-    echo "\n TPB - completed. ".count($results)." crawled \n";
     return $results;
   }
 }
