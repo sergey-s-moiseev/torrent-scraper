@@ -75,14 +75,14 @@ class EzTvAdapter implements AdapterInterface
     {
         $cookieFile = tmpfile();
         $client = new Client([
-            'cookies' => new FileCookieJar($this->getTmpFilename($cookieFile)),
+//            'cookies' => new FileCookieJar($this->getTmpFilename($cookieFile)),
             'headers' => [ // these headers need to avoid recaptcha request
                 'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
                 'Accept-Encoding' => 'gzip, deflate',
                 'Accept-Language' => 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7'
             ]
         ]);
-        $client->getConfig('handler')->push(CloudflareMiddleware::create($this->options['node_path'], $this->options['node_modules_path']));
+//        $client->getConfig('handler')->push(CloudflareMiddleware::create($this->options['node_path'], $this->options['node_modules_path']));
 
         $response = $this->getDataFromHttpClient($client, 'https://eztv.io/search/' . $this->transformSearchString($query));
         if(null === $response) {
@@ -187,7 +187,8 @@ class EzTvAdapter implements AdapterInterface
                 $seeds = str_replace($vowels, "", $seeds);
             } catch (\Exception $e) {$seeds = 0;}
 
-            try {$det_url = 'https://eztv.io' . $itemCrawler->filter('td')->eq(1)->filter('a.epinfo')->attr('href');
+            try {
+                $det_url = 'https://eztv.io' . $itemCrawler->filter('td')->eq(1)->filter('a.epinfo')->attr('href');
             }catch (\Exception $e) {
                 $det_url = 'https://eztv.io';
             }
@@ -272,7 +273,13 @@ class EzTvAdapter implements AdapterInterface
     {
         for($i = 0; $i < 5; $i++) {
             try {
-                return $client->get($url);
+                return $client->get($url, [
+                    'config' => [
+                        'curl' => [
+                            CURLOPT_INTERFACE => '127.0.0.1'
+                        ]
+                    ]
+                ]);
             } catch(\Exception $e) {
                 $this->log(\Psr\Log\LogLevel::ERROR, $e->getMessage());
             }

@@ -222,7 +222,6 @@ class ThePirateBayAdapter implements AdapterInterface
         $result->setSize($size);
         $result->setIsVerified($verified);
 
-        var_dump($name. ' -> ' . $result->getCategory());
         $results[] = $result;
       }
     }
