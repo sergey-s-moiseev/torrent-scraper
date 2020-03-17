@@ -65,7 +65,7 @@ class EzTvAdapter implements AdapterInterface
      */
     public function getUrl()
     {
-        return 'https://eztv.io/';
+        return 'https://eztv.io';
     }
 
     /**
@@ -73,155 +73,189 @@ class EzTvAdapter implements AdapterInterface
      */
     public function search($query='')
     {
-        $cookieFile = tmpfile();
-        $client = new Client([
-//            'cookies' => new FileCookieJar($this->getTmpFilename($cookieFile)),
-            'headers' => [ // these headers need to avoid recaptcha request
-                'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-                'Accept-Encoding' => 'gzip, deflate',
-                'Accept-Language' => 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7'
-            ]
-        ]);
-//        $client->getConfig('handler')->push(CloudflareMiddleware::create($this->options['node_path'], $this->options['node_modules_path']));
+//        $cookieFile = tmpfile();
+//        $client = new Client([
+////            'cookies' => new FileCookieJar($this->getTmpFilename($cookieFile)),
+//            'headers' => [ // these headers need to avoid recaptcha request
+//                'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+//                'Accept-Encoding' => 'gzip, deflate',
+//                'Accept-Language' => 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7'
+//            ]
+//        ]);
+////        $client->getConfig('handler')->push(CloudflareMiddleware::create($this->options['node_path'], $this->options['node_modules_path']));
+//
+//        $response = $this->getDataFromHttpClient($client, 'https://eztv.io/search/' . $this->transformSearchString($query));
+//        if(null === $response) {
+//            return [];
+//        }
+//
+//        $crawler = new Crawler((string) $response->getBody());
+//        $items = $crawler->filter('tr.forum_header_border');
+//        $results = [];
+//        foreach ($items as $item) {
+//            $result = new SearchResult();
+//            $itemCrawler = new Crawler($item);
+//            $save = true;
+//
+//            //->critical
+//            $name = null;
+//            $magnet_url = null;
+//            $torrent_file = null;
+//
+//            try {$name = trim($itemCrawler->filter('td')->eq(1)->filter('a.epinfo')->text());
+//            }catch (\Exception $e) {}
+//            try {$magnet_url = $itemCrawler->filter('td')->eq(2)->filter('a.magnet')->attr('href');
+//            }catch (\Exception $e) {}
+//            try {$torrent_file = $itemCrawler->filter('td')->eq(2)->filter('a.download_2')->attr('href');
+//            }catch (\Exception $e) {}
+//            if (is_null($name) || (is_null($magnet_url)  && is_null($torrent_file))){
+//                $save = false;
+//                continue;
+//            }
+//            /**Validate hash **/
+//            if (empty ($magnet_url)) {continue;}
+//            preg_match("/urn:btih:(.{40}).*/",$magnet_url,$out);
+//            if (isset($out[1])) $hash = strtolower($out[1]);
+//            if(!(preg_match("/^[a-f0-9]{40}$/",$hash))){continue;}
+//
+//                //->non critical
+//            /**Size**/
+//            $size_str = 0;
+//            try{
+//                $size_str = trim($itemCrawler->filter('td')->eq(3)->text());
+//                $size_arr = explode(" ", $size_str);
+//                $size = floatval($size_arr[0]);
+//                $k_size = $size_arr[1];
+//                switch ($k_size) {
+//                    case 'KB':
+//                        $size = $size * 1 / 1024;
+//                        break;
+//                    case 'MB':
+//                        break;
+//                    case 'GB':
+//                        $size = $size * 1024;
+//                        break;
+//                    case 'TB':
+//                        $size = $size * 1024 * 1024;
+//                        break;
+//                }
+//            }catch (\Exception $e) {}
+//
+//            /** Time **/
+//            $now = new DateTime();
+//            try{
+//                $age = trim($itemCrawler->filter('td')->eq(4)->text());
+//                $age = iconv('UTF-8','cp1251',$age);
+//                $age = str_replace(chr(160), chr(32), $age);
+//                $age = iconv('cp1251','UTF-8',$age);
+//                $_age = [];
+//                $minus = ' ';
+//                if(preg_match("/([0-9]{1,2})m\s([0-9]{1,2})s/", $age, $output)) {
+//                    $_age = preg_replace("/([0-9]{1,2})m\s([0-9]{1,2})s/", "$1minutes $2seconds", $age);
+//                    $minus = ' - ';
+//                }
+//                if(preg_match("/([0-9]{1,2})h\s([0-9]{1,2})m/", $age, $output)) {
+//                    $_age = preg_replace("/([0-9]{1,2})h\s([0-9]{1,2})m/", "$1hours $2minutes", $age);
+//                    $minus = ' - ';
+//                }
+//                if(preg_match("/([0-9]{1,2})d\s([0-9]{1,2})h/", $age, $output)) {
+//                    $_age = preg_replace("/([0-9]{1,2})d\s([0-9]{1,2})h/", "$1days $2hours", $age);
+//                    $minus = ' - ';
+//                }
+//
+//                if (preg_match("/[0-9]{1,2}\sweek\w*/", $age, $output)) {
+//                    $_age = $output[0];
+//                }
+//                if (preg_match("/[0-9]{1,2}\smo\w*/", $age, $output)) {
+//                    $_age = preg_replace("/([0-9]{1,2})\smo\w*/", "$1 month", $age);
+//                }
+//                if (preg_match("/[0-9]{1,2}\syear\w*/", $age, $output)) {
+//                    $_age = $output[0];
+//                }
+//
+//                $_age = explode(' ', $_age);
+//                $date = $now->modify('- '.$_age[0].$minus.$_age[1]);
+//            } catch (\Exception $e) {
+//                $date = $now;
+//            }
+//
+//             /**Seeds**/
+//            $seeds = null;
+//            try {
+//                $seeds = trim($itemCrawler->filter('td')->eq(5)->children()->text());
+//                $vowels = array(",", ".", " ");
+//                $seeds = str_replace($vowels, "", $seeds);
+//            } catch (\Exception $e) {$seeds = 0;}
+//
+//            try {
+//                $det_url = 'https://eztv.io' . $itemCrawler->filter('td')->eq(1)->filter('a.epinfo')->attr('href');
+//            }catch (\Exception $e) {
+//                $det_url = 'https://eztv.io';
+//            }
+//
+//
+//            /**Peers**/
+//            $peers = 0;
+//            try {
+//                $response = $this->getDataFromHttpClient($client, $det_url);
+//                if(null !== $response) {
+//                    $crawler = new Crawler((string) $response->getBody());
+//                    $peers = $crawler->filter('span.stat_green')->text();
+//                }
+//            } catch (\Exception $e) {
+//            }
+//
+//
+////            $rat_url = 'https:s//eztv.io'. $itemCrawler->filter('td')->eq(0)->children()->attr('href');
+////            $result->setRating($this->getRating($client, $rat_url));
+//            $result->setCategory('Tv Show');
+//            $result->setName($name);
+//            $result->setDetailsUrl($det_url);
+//            $result->setSeeders((int) $seeds);
+//            $result->setLeechers($peers);
+//            $result->setTimestamp($date->getTimestamp());
+////            $result->setLeechers($this->getPeers($client, $det_url));
+//            $result->setSource(self::ADAPTER_NAME);
+//            $result->setMagnetUrl($magnet_url);
+//            $result->setSize($size);
+//            $result->setIsVerified(true);
+//            if ($save) $results[] = $result;
+//        }
+//        fclose($cookieFile);
+//        echo "\n EZ - completed. ".count($results)." crawled \n";
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'https://app.scrapinghub.com/api/jobs/list.json?project=435705&spider=eztv&state=finished&count=1');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_USERNAME, "");
+        $output = curl_exec($ch);
+        curl_close($ch);
+        $job_info = json_decode($output);
+        $job_id = $job_info->jobs[0]->id;
 
-        $response = $this->getDataFromHttpClient($client, 'https://eztv.io/search/' . $this->transformSearchString($query));
-        if(null === $response) {
-            return [];
-        }
+        $url = "https://storage.scrapinghub.com/items/$job_id?format=json";
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_USERNAME, "");
+        $output = curl_exec($ch);
+        curl_close($ch);
+        $items = json_decode($output);
 
-        $crawler = new Crawler((string) $response->getBody());
-        $items = $crawler->filter('tr.forum_header_border');
         $results = [];
         foreach ($items as $item) {
             $result = new SearchResult();
-            $itemCrawler = new Crawler($item);
-            $save = true;
-
-            //->critical
-            $name = null;
-            $magnet_url = null;
-            $torrent_file = null;
-
-            try {$name = trim($itemCrawler->filter('td')->eq(1)->filter('a.epinfo')->text());
-            }catch (\Exception $e) {}
-            try {$magnet_url = $itemCrawler->filter('td')->eq(2)->filter('a.magnet')->attr('href');
-            }catch (\Exception $e) {}
-            try {$torrent_file = $itemCrawler->filter('td')->eq(2)->filter('a.download_2')->attr('href');
-            }catch (\Exception $e) {}
-            if (is_null($name) || (is_null($magnet_url)  && is_null($torrent_file))){
-                $save = false;
-                continue;
-            }
-            /**Validate hash **/
-            if (empty ($magnet_url)) {continue;}
-            preg_match("/urn:btih:(.{40}).*/",$magnet_url,$out);
-            if (isset($out[1])) $hash = strtolower($out[1]);
-            if(!(preg_match("/^[a-f0-9]{40}$/",$hash))){continue;}
-
-                //->non critical
-            /**Size**/
-            $size_str = 0;
-            try{
-                $size_str = trim($itemCrawler->filter('td')->eq(3)->text());
-                $size_arr = explode(" ", $size_str);
-                $size = floatval($size_arr[0]);
-                $k_size = $size_arr[1];
-                switch ($k_size) {
-                    case 'KB':
-                        $size = $size * 1 / 1024;
-                        break;
-                    case 'MB':
-                        break;
-                    case 'GB':
-                        $size = $size * 1024;
-                        break;
-                    case 'TB':
-                        $size = $size * 1024 * 1024;
-                        break;
-                }
-            }catch (\Exception $e) {}
-
-            /** Time **/
-            $now = new DateTime();
-            try{
-                $age = trim($itemCrawler->filter('td')->eq(4)->text());
-                $age = iconv('UTF-8','cp1251',$age);
-                $age = str_replace(chr(160), chr(32), $age);
-                $age = iconv('cp1251','UTF-8',$age);
-                $_age = [];
-                $minus = ' ';
-                if(preg_match("/([0-9]{1,2})m\s([0-9]{1,2})s/", $age, $output)) {
-                    $_age = preg_replace("/([0-9]{1,2})m\s([0-9]{1,2})s/", "$1minutes $2seconds", $age);
-                    $minus = ' - ';
-                }
-                if(preg_match("/([0-9]{1,2})h\s([0-9]{1,2})m/", $age, $output)) {
-                    $_age = preg_replace("/([0-9]{1,2})h\s([0-9]{1,2})m/", "$1hours $2minutes", $age);
-                    $minus = ' - ';
-                }
-                if(preg_match("/([0-9]{1,2})d\s([0-9]{1,2})h/", $age, $output)) {
-                    $_age = preg_replace("/([0-9]{1,2})d\s([0-9]{1,2})h/", "$1days $2hours", $age);
-                    $minus = ' - ';
-                }
-
-                if (preg_match("/[0-9]{1,2}\sweek\w*/", $age, $output)) {
-                    $_age = $output[0];
-                }
-                if (preg_match("/[0-9]{1,2}\smo\w*/", $age, $output)) {
-                    $_age = preg_replace("/([0-9]{1,2})\smo\w*/", "$1 month", $age);
-                }
-                if (preg_match("/[0-9]{1,2}\syear\w*/", $age, $output)) {
-                    $_age = $output[0];
-                }
-
-                $_age = explode(' ', $_age);
-                $date = $now->modify('- '.$_age[0].$minus.$_age[1]);
-            } catch (\Exception $e) {
-                $date = $now;
-            }
-
-             /**Seeds**/
-            $seeds = null;
-            try {
-                $seeds = trim($itemCrawler->filter('td')->eq(5)->children()->text());
-                $vowels = array(",", ".", " ");
-                $seeds = str_replace($vowels, "", $seeds);
-            } catch (\Exception $e) {$seeds = 0;}
-
-            try {
-                $det_url = 'https://eztv.io' . $itemCrawler->filter('td')->eq(1)->filter('a.epinfo')->attr('href');
-            }catch (\Exception $e) {
-                $det_url = 'https://eztv.io';
-            }
-
-
-            /**Peers**/
-            $peers = 0;
-            try {
-                $response = $this->getDataFromHttpClient($client, $det_url);
-                if(null !== $response) {
-                    $crawler = new Crawler((string) $response->getBody());
-                    $peers = $crawler->filter('span.stat_green')->text();
-                }
-            } catch (\Exception $e) {
-            }
-
-
-//            $rat_url = 'https:s//eztv.io'. $itemCrawler->filter('td')->eq(0)->children()->attr('href');
-//            $result->setRating($this->getRating($client, $rat_url));
             $result->setCategory('Tv Show');
-            $result->setName($name);
-            $result->setDetailsUrl($det_url);
-            $result->setSeeders((int) $seeds);
-            $result->setLeechers($peers);
-            $result->setTimestamp($date->getTimestamp());
-//            $result->setLeechers($this->getPeers($client, $det_url));
+            $result->setName($item->title);
+            $result->setDetailsUrl($this->getUrl().$item->url);
+            $result->setSeeders((int) $item->seeds);
+            $result->setLeechers($item->peers);
+            $result->setTimestamp((int) $item->released);
             $result->setSource(self::ADAPTER_NAME);
-            $result->setMagnetUrl($magnet_url);
-            $result->setSize($size);
+            $result->setMagnetUrl($item->magnet);
+            $result->setSize($item->size);
             $result->setIsVerified(true);
-            if ($save) $results[] = $result;
+            $results[] = $result;
         }
-        fclose($cookieFile);
         echo "\n EZ - completed. ".count($results)." crawled \n";
 
         return $results;
