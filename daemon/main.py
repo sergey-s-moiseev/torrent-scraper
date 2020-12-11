@@ -1,6 +1,6 @@
 import multiprocessing
 import socket
-from http_parser.parser import HttpParser
+from HttpParser import http_parser.parser
 import sys
 import time
 import signal
